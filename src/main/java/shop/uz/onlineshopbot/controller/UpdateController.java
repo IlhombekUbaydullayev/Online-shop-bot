@@ -6,7 +6,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import shop.uz.onlineshopbot.bot.MainBot;
+import shop.uz.onlineshopbot.entities.Category;
 import shop.uz.onlineshopbot.entities.User;
+import shop.uz.onlineshopbot.enums.UserState;
 import shop.uz.onlineshopbot.service.CategoryService;
 import shop.uz.onlineshopbot.service.UserService;
 import shop.uz.onlineshopbot.utils.MessageUtils;
@@ -17,6 +19,7 @@ import static shop.uz.onlineshopbot.enums.UserState.*;
 @Component
 @Slf4j
 public class UpdateController {
+    String tx = "";
     private MainBot mainBot;
     private final MessageUtils messageUtils;
 
@@ -26,7 +29,8 @@ public class UpdateController {
     private final ReplyKeyboardButton replyKeyboardButton;
     private User currentUser;
 
-    public UpdateController(MessageUtils messageUtils, UserService userService, CategoryService categoryService, ReplyKeyboardButton replyKeyboardButton) {
+    public UpdateController(MessageUtils messageUtils, UserService userService,
+                            CategoryService categoryService, ReplyKeyboardButton replyKeyboardButton) {
         this.messageUtils = messageUtils;
         this.userService = userService;
         this.categoryService = categoryService;
@@ -49,10 +53,9 @@ public class UpdateController {
     private void distrubuteMessageType(Update update) {
         var message = update.getMessage();
         currentUser = findCurrentUser(update);
-        log.info(currentUser.getState().toString());
         if (message.hasText()) {
             processTextMessage(update);
-        }else {
+        } else {
             processNotFound(message);
         }
     }
@@ -60,44 +63,45 @@ public class UpdateController {
     private void processTextMessage(Update update) {
         String text = update.getMessage().getText();
         switch (text) {
-            case "/start" : {
-                var sendMessage = replyKeyboardButton.firstKeyboard(update,"Quyidagilardan birini tanlang!","Mahsulotlar \uD83C\uDFEC");
-                setView(sendMessage);
+            case "/start": {
+                var sendMessage = replyKeyboardButton.firstKeyboard(update, "Quyidagilardan birini tanlang!", "Mahsulotlar \uD83C\uDFEC");
+                senderMessage(sendMessage, START);
                 break;
             }
-            case "Mahsulotlar \uD83C\uDFEC" : {
-                var sendMessage = replyKeyboardButton.secondKeyboard(update,"Ro'yxatdan birini tanlang",categoryService.findAll());
-                setView(sendMessage);
-                currentUser.setState(MENU);
-                userService.update(currentUser.getId(),currentUser);
+            case "Mahsulotlar \uD83C\uDFEC": {
+                var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang", categoryService.findAll());
+                senderMessage(sendMessage, MENU);
                 break;
             }
             default: {
                 if (currentUser.getState().equals(MENU)) {
-                    if (text.equals("Yangi Mahsulotlar \uD83C\uDFEC")) {
-                        var sendMessage = replyKeyboardButton.firstKeyboard(update,"Oziq ovqat mahsulotlar!","Oziq ovqat mahsulotlar \uD83C\uDFEC");
-                        setView(sendMessage);
-                        currentUser.setState(USER_PHONE_NUMBER);
-                        userService.update(currentUser.getId(),currentUser);
-                    }else {
-                        var sendMessage = replyKeyboardButton.firstKeyboard(update,"Yangi mahsulotlar!","Yangi Mahsulotlar \uD83C\uDFEC");
-                        setView(sendMessage);
-                        currentUser.setState(MENU);
-                        userService.update(currentUser.getId(),currentUser);
+                    categoryService.findAll().forEach(c -> {
+                        if (text.equals(c.getName())) {
+                            tx = c.getName();
+                        }
+                    });
+                    if (text.equals(tx)) {
+                        Category category = categoryService.findAllByName(tx);
+                        var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!", categoryService.findAllByParentId(category.getId()));
+                        senderMessage(sendMessage, INLINE);
+                    } else if (text.equals("Orqaga ⬅\uFE0F")) {
+                        var sendMessage = replyKeyboardButton.firstKeyboard(update, "Quyidagilardan birini tanlang!", "Mahsulotlar \uD83C\uDFEC");
+                        senderMessage(sendMessage, START);
+                    } else {
+                        var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang", categoryService.findAll());
+                        senderMessage(sendMessage, MENU);
                     }
-                }else if (currentUser.getState().equals(USER_PHONE_NUMBER)) {
-                    currentUser.setPhoneNumber(text);
-                    var sendMessage = messageUtils.generateSendMessageWithText(update,"Siz ro'yxatdan o'tdingiz!");
-                    setView(sendMessage);
-                    currentUser.setState(REGISTER);
-                    userService.update(currentUser.getId(),currentUser);
-                }else if (currentUser.getState().equals(REGISTER)) {
-                    var sendMessage = messageUtils.generateSendMessageWithText(update,"Iltimos admin javobini kuting!");
-                    setView(sendMessage);
-                    currentUser.setState(REGISTER);
-                    userService.update(currentUser.getId(),currentUser);
-                }else if (currentUser.getState().equals(START)) {
-                    var sendMessage = replyKeyboardButton.firstKeyboard(update,"Quyidagilardan birini tanlang!","Mahsulotlar \uD83C\uDFEC");
+                } else if (currentUser.getState().equals(INLINE)) {
+                    if (text.equals("Orqaga ⬅\uFE0F")) {
+                        var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang", categoryService.findAll());
+                        senderMessage(sendMessage, MENU);
+                    } else {
+                        Category category = categoryService.findAllByName(tx);
+                        var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!", categoryService.findAllByParentId(category.getId()));
+                        senderMessage(sendMessage, INLINE);
+                    }
+                } else if (currentUser.getState().equals(START)) {
+                    var sendMessage = replyKeyboardButton.firstKeyboard(update, "Quyidagilardan birini tanlang!", "Mahsulotlar \uD83C\uDFEC");
                     setView(sendMessage);
                 }
                 break;
@@ -114,6 +118,12 @@ public class UpdateController {
 
     private void setView(SendMessage sendMessage) {
         mainBot.sendAnswerMessage(sendMessage);
+    }
+
+    private void senderMessage(SendMessage sendMessage, UserState state) {
+        setView(sendMessage);
+        currentUser.setState(state);
+        userService.update(currentUser.getId(), currentUser);
     }
 
     private User findCurrentUser(Update update) {

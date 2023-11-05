@@ -61,6 +61,15 @@ public class ReplyKeyboardButton {
         if (kr2.size() % 2 != 0) {
             KeyboardRow kr1 = new KeyboardRow();
             kr1.add(kr2.get(kr2.size()-1));
+            KeyboardButton btn = new KeyboardButton();
+            btn.setText("Orqaga ⬅\uFE0F");
+            kr1.add(btn);
+            rows.add(kr1);
+        }else {
+            KeyboardRow kr1 = new KeyboardRow();
+            KeyboardButton btn = new KeyboardButton();
+            btn.setText("Orqaga ⬅\uFE0F");
+            kr1.add(btn);
             rows.add(kr1);
         }
         System.out.println(kr2.size());

@@ -30,7 +30,6 @@ public class UserService {
             User user2 = byId.get();
             user2.setChatId(user.getChatId());
             user2.setName(user.getName());
-            user2.setPhoneNumber(user.getPhoneNumber());
             user2.setState(user.getState());
             userRepository.save(user2);
             return user2;

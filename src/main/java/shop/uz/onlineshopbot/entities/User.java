@@ -7,7 +7,6 @@ import shop.uz.onlineshopbot.enums.UserState;
 @Entity(name = "users")
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -17,5 +16,4 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserState state = UserState.START;
     private String name;
-    private String phoneNumber;
 }

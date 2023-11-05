@@ -20,6 +20,13 @@ public class CategoryService {
     }
 
     public List<Category> findAll() {
-        return repository.findAll();
+        return repository.findAllByParentIdNull();
+    }
+    public Category findAllByName(String name) {
+        return repository.findByName(name).get();
+    }
+
+    public List<Category> findAllByParentId(Long parentId) {
+        return repository.findAllByParentId(parentId);
     }
 }
