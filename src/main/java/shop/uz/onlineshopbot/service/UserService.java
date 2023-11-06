@@ -31,9 +31,14 @@ public class UserService {
             user2.setChatId(user.getChatId());
             user2.setName(user.getName());
             user2.setState(user.getState());
+            user2.setAddress(user.getAddress());
             userRepository.save(user2);
             return user2;
         }
         return new User();
+    }
+
+    public User findOne(Long id) {
+        return userRepository.findById(id).get();
     }
 }
