@@ -35,4 +35,9 @@ public class AddressService {
     public List<Address> findAllByUserId(Long userId) {
         return repository.findAllByUsersId(userId);
     }
+
+    public Boolean findByLatLong(Long userId,Double latitude,Double longitude) {
+        Optional<Address> location = repository.findByUsersIdAndLatitudeAndLongitude(userId,latitude, longitude);
+        return location.isPresent();
+    }
 }

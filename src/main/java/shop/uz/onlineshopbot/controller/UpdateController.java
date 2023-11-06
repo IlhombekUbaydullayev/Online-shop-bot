@@ -1,6 +1,5 @@
 package shop.uz.onlineshopbot.controller;
 
-import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
@@ -19,10 +18,9 @@ import shop.uz.onlineshopbot.service.UserService;
 import shop.uz.onlineshopbot.utils.MessageUtils;
 import shop.uz.onlineshopbot.utils.ReplyKeyboardButton;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static shop.uz.onlineshopbot.enums.UserState.*;
 import static shop.uz.onlineshopbot.utils.Emojies.*;
@@ -44,6 +42,7 @@ public class UpdateController {
     private final ReplyKeyboardButton replyKeyboardButton;
     ResourceBundleMessageSource bundle = new ResourceBundleMessageSource();
     Locale locale = null;
+    int isChecked;
     private User currentUser;
 
     public UpdateController(MessageUtils messageUtils, UserService userService,
@@ -171,6 +170,7 @@ public class UpdateController {
     }
 
     private void processLocation(Update update) {
+        isChecked = 0;
         var message = update.getMessage();
         message.getLocation().toString();
         Location location = message.getLocation();
@@ -180,11 +180,19 @@ public class UpdateController {
                 .build();
 
         User user = userService.findOne(currentUser.getId());
+        System.out.println(addressService.findByLatLong(user.getId(),address.getLatitude(), address.getLongitude()));
         address.setUsers(user);
-        Address address1 = addressService.create(address);
         List<Address> allByUserId = addressService.findAllByUserId(user.getId());
-        allByUserId.add(address1);
-        currentUser.setAddress(allByUserId);
+        allByUserId.forEach(a -> {
+            if (a.getLatitude().equals(address.getLatitude()) && a.getLongitude().equals(address.getLongitude())) {
+                isChecked ++;
+            }
+        });
+        if (isChecked == 0) {
+            Address address1 = addressService.create(address);
+            allByUserId.add(address1);
+            currentUser.setAddress(allByUserId);
+        }
         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll());
         senderMessage(sendMessage, MENU);
