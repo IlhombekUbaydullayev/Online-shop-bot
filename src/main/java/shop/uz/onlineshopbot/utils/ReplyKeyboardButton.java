@@ -2,6 +2,7 @@ package shop.uz.onlineshopbot.utils;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
@@ -9,6 +10,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import shop.uz.onlineshopbot.entities.Address;
 import shop.uz.onlineshopbot.entities.Category;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +55,7 @@ public class ReplyKeyboardButton {
         return sendMessage;
     }
 
-    public SendMessage secondKeyboard(Update update, String text,String btnText, List<Category> categories) {
+    public SendMessage secondKeyboard(Update update, String text,String btnText, List<Category> categories,boolean isPhoto) {
         count = 0;
         var message = update.getMessage();
         var sendMessage = new SendMessage();

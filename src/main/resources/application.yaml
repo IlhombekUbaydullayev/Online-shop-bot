@@ -1,0 +1,19 @@
+server:
+  port: 8086
+bot:
+  name: onlineuzbeknewbot
+  token: 6723296213:AAGQ32RDVUc0Hee7F2szCK3VsBtvdyhQZYA
+spring:
+  main:
+    allow-circular-references: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/online_shop
+    username: postgres
+    password: 1111111111
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+upload:
+  folder: C:\files\onlayn-shop-bot/upload/

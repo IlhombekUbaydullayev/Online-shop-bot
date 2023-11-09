@@ -1,26 +1,32 @@
 package shop.uz.onlineshopbot.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import shop.uz.onlineshopbot.bot.MainBot;
 import shop.uz.onlineshopbot.entities.Address;
 import shop.uz.onlineshopbot.entities.Category;
+import shop.uz.onlineshopbot.entities.FileStorage;
 import shop.uz.onlineshopbot.entities.User;
 import shop.uz.onlineshopbot.enums.UserState;
 import shop.uz.onlineshopbot.service.AddressService;
 import shop.uz.onlineshopbot.service.CategoryService;
+import shop.uz.onlineshopbot.service.FileStorageService;
 import shop.uz.onlineshopbot.service.UserService;
 import shop.uz.onlineshopbot.utils.MessageUtils;
 import shop.uz.onlineshopbot.utils.ReplyKeyboardButton;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static shop.uz.onlineshopbot.enums.UserState.*;
 import static shop.uz.onlineshopbot.utils.Emojies.*;
@@ -30,6 +36,9 @@ import static shop.uz.onlineshopbot.utils.TranslationCode.*;
 @Slf4j
 public class UpdateController {
     String tx = "";
+
+    @Value("${upload.folder}")
+    private String uploadFolder;
     private MainBot mainBot;
     private final MessageUtils messageUtils;
 
@@ -40,25 +49,28 @@ public class UpdateController {
     private final AddressService addressService;
 
     private final ReplyKeyboardButton replyKeyboardButton;
+
+    private final FileStorageService fileStorageService;
     ResourceBundleMessageSource bundle = new ResourceBundleMessageSource();
     Locale locale = null;
     int isChecked;
     private User currentUser;
 
     public UpdateController(MessageUtils messageUtils, UserService userService,
-                            CategoryService categoryService, AddressService addressService, ReplyKeyboardButton replyKeyboardButton) {
+                            CategoryService categoryService, AddressService addressService, ReplyKeyboardButton replyKeyboardButton, FileStorageService fileStorageService) {
         this.messageUtils = messageUtils;
         this.userService = userService;
         this.categoryService = categoryService;
         this.addressService = addressService;
         this.replyKeyboardButton = replyKeyboardButton;
+        this.fileStorageService = fileStorageService;
     }
 
     public void registerBot(MainBot mainBot) {
         this.mainBot = mainBot;
     }
 
-    public void processUpdate(Update update) {
+    public void processUpdate(Update update) throws Exception {
         if (update == null) {
             return;
         }
@@ -67,7 +79,7 @@ public class UpdateController {
         }
     }
 
-    private void distrubuteMessageType(Update update) {
+    private void distrubuteMessageType(Update update) throws Exception {
         var message = update.getMessage();
         currentUser = findCurrentUser(update);
         if (message.hasText()) {
@@ -79,7 +91,7 @@ public class UpdateController {
         }
     }
 
-    private void processTextMessage(Update update) {
+    private void processTextMessage(Update update) throws FileNotFoundException {
         String text = update.getMessage().getText();
         bundle.setBasenames("text");
         bundle.setDefaultEncoding("UTF-8");
@@ -102,7 +114,10 @@ public class UpdateController {
                     if (text.equals(tx)) {
                         Category category = categoryService.findAllByName(tx);
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()));
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()),false);
+                        if (category.getFileStorage() != null) {
+                            photo(update, category.getFileStorage().getHashId());
+                        }
                         senderMessage(sendMessage, INLINE);
                     } else if (text.equals(BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK))) {
                         var sendMessage = replyKeyboardButton.shareLocation(update, "Joylashuvni kiriting!",
@@ -110,18 +125,29 @@ public class UpdateController {
                         senderMessage(sendMessage, LOCATION);
                     } else {
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll());
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(),false);
                         senderMessage(sendMessage, MENU);
                     }
                 } else if (currentUser.getState().equals(INLINE)) {
+                    Category categories = categoryService.findAllByName(text);
+                    if (text.equals(categories.getName())) {
+                        tx = categories.getName();
+                    }
+                    System.out.println("My text + " + tx + " and bot text + " + text) ;
                     if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll());
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(),false);
                         senderMessage(sendMessage, MENU);
-                    } else {
+                    }else if (text.equals(tx)){
+                        Category category = categoryService.findAllByName(tx);
+                        var sendMessage = replyKeyboardButton.secondKeyboard(update, tx + " mahsulotlari",
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()),false);
+                        senderMessage(sendMessage, PRODUCTS);
+                        log.info(tx);
+                    }else {
                         Category category = categoryService.findAllByName(tx);
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()));
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()),false);
                         senderMessage(sendMessage, INLINE);
                     }
                 } else if (currentUser.getState().equals(START)) {
@@ -194,7 +220,7 @@ public class UpdateController {
             currentUser.setAddress(allByUserId);
         }
         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
-                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll());
+                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(),false);
         senderMessage(sendMessage, MENU);
         System.out.println(location.getLongitude() + "," + location.getLatitude());
     }
@@ -228,5 +254,15 @@ public class UpdateController {
         user1.setChatId(update.getMessage().getChatId());
         userService.create(user1);
         return user1;
+    }
+
+    private void photo(Update update, String hashId) {
+        FileStorage fileStorage = fileStorageService.findByHashId(hashId);
+        if (fileStorage != null) {
+            SendPhoto messages = new SendPhoto();
+            messages.setChatId(update.getMessage().getChatId());
+            messages.setPhoto(new InputFile(new File(uploadFolder + fileStorage.getUploadPath())));
+            mainBot.sendAnswerMessageWithPhoto(messages);
+        }
     }
 }

@@ -7,5 +7,6 @@ public enum UserState {
     INLINE,
     REGISTER,
     LOCATION,
-    MY_LOCATION
+    MY_LOCATION,
+    PRODUCTS
 }

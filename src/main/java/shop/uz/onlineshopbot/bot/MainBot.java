@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import shop.uz.onlineshopbot.controller.UpdateController;
 
@@ -41,7 +42,11 @@ public class MainBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        updateController.processUpdate(update);
+        try {
+            updateController.processUpdate(update);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -58,6 +63,16 @@ public class MainBot extends TelegramLongPollingBot {
         if (sendMessage != null) {
             try {
                 execute(sendMessage);
+            }catch (Exception e) {
+                log.error(String.valueOf(e));
+            }
+        }
+    }
+
+    public void sendAnswerMessageWithPhoto(SendPhoto sendPhoto) {
+        if (sendPhoto != null) {
+            try {
+                this.execute(sendPhoto);
             }catch (Exception e) {
                 log.error(String.valueOf(e));
             }
