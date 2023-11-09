@@ -11,10 +11,19 @@ spring:
     username: postgres
     password: 1111111111
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 30000
+      idle-timeout: 60000
+      max-lifetime: 1800000
   jpa:
+    generate-ddl: false
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false #to disable contextual lob creation when application starts.
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 upload:
   folder: C:\files\onlayn-shop-bot/upload/
