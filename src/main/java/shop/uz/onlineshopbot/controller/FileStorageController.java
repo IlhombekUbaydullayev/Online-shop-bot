@@ -25,10 +25,10 @@ public class FileStorageController {
         this.service = service;
     }
 
-    @PostMapping("/upload/{id}")
-    public ResponseEntity upload(@RequestParam("file") MultipartFile file,@PathVariable Long id) {
-        service.save(file,id);
-        return ResponseEntity.ok(file.getOriginalFilename() + " file saved!");
+    @PostMapping("/upload")
+    public ResponseEntity upload(@RequestParam("file") MultipartFile file) {
+        String save = service.save(file);
+        return ResponseEntity.ok(save);
     }
 
     @GetMapping("/preview/{hashId}")

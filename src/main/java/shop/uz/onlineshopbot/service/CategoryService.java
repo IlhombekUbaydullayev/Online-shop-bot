@@ -1,22 +1,32 @@
 package shop.uz.onlineshopbot.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import shop.uz.onlineshopbot.entities.Category;
+import shop.uz.onlineshopbot.entities.FileStorage;
 import shop.uz.onlineshopbot.repositories.CategoryRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class CategoryService {
 
     private final CategoryRepository repository;
+    private final FileStorageService fileStorageService;
 
-    public CategoryService(CategoryRepository repository) {
+    public CategoryService(CategoryRepository repository, FileStorageService fileStorageService) {
         this.repository = repository;
+        this.fileStorageService = fileStorageService;
     }
 
-    public Category create(Category categories) {
+    public Category create(Category categories,String hashId) {
+        FileStorage fileStorage = fileStorageService.findByHashId(hashId);
+        if (fileStorage != null) {
+            log.info("This is : " + fileStorage);
+            categories.setFileStorage(fileStorage);
+        }
         return repository.save(categories);
     }
 
@@ -42,6 +52,7 @@ public class CategoryService {
 
     public Category update(Long categoryId,Category category) {
         Optional<Category> category1 = repository.findById(categoryId);
+
         if (category1.isPresent()) {
             Category category2 = category1.get();
             category2.setName(category.getName());

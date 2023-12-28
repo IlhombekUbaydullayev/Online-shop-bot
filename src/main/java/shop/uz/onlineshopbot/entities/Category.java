@@ -3,6 +3,8 @@ package shop.uz.onlineshopbot.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -16,4 +18,6 @@ public class Category {
     private Long parentId = null;
     @OneToOne
     private FileStorage fileStorage = null;
+    @OneToMany( mappedBy = "category")
+    private List<Products> products = null;
 }

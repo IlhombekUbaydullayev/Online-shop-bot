@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import shop.uz.onlineshopbot.entities.Category;
 import shop.uz.onlineshopbot.entities.FileStorage;
 import shop.uz.onlineshopbot.enums.FileStorageStatus;
 import shop.uz.onlineshopbot.repositories.FileStorageRepository;
@@ -14,24 +13,24 @@ import shop.uz.onlineshopbot.repositories.FileStorageRepository;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Optional;
 
 @Slf4j
 @Service
 public class FileStorageService {
     private final FileStorageRepository repository;
-    private final CategoryService categoryService;
+
     private final Hashids hashids;
 
     @Value("${upload.folder}")
     private String uploadFolder;
 
-    public FileStorageService(FileStorageRepository repository, CategoryService categoryService) {
+    public FileStorageService(FileStorageRepository repository) {
         this.repository = repository;
-        this.categoryService = categoryService;
         this.hashids = new Hashids(getClass().getName(),4);
     }
 
-    public void save(MultipartFile multipartFile,Long categoryId) {
+    public String save(MultipartFile multipartFile) {
         FileStorage fileStorage = new FileStorage();
         fileStorage.setName(multipartFile.getOriginalFilename());
         fileStorage.setExtension(getExt(multipartFile.getOriginalFilename()));
@@ -47,13 +46,14 @@ public class FileStorageService {
         if (!uploadFolder.exists() && uploadFolder.mkdirs()) {
             log.info("file created!");
         }
-        fileStorage.setHashId(hashids.encode(fileStorage.getId()));
+        String encode = hashids.encode(fileStorage.getId());
+        fileStorage.setHashId(encode);
         fileStorage.setUploadPath(String.format("upload_files/%d/%d/%d/%s.%s",1900 + now.getYear(),
                 1 + now.getMonth(),now.getDate(),fileStorage.getHashId(),fileStorage.getExtension()));
         FileStorage save = repository.save(fileStorage);
-        Category byId = categoryService.findById(categoryId);
-        byId.setFileStorage(save);
-        categoryService.update(categoryId,byId);
+//        Category byId = categoryService.findById(categoryId);
+//        byId.setFileStorage(save);
+//        categoryService.update(categoryId,byId);
         uploadFolder = uploadFolder.getAbsoluteFile();
         File file = new File(uploadFolder,String.format("%s.%s",fileStorage.getHashId(),fileStorage.getExtension()));
         try {
@@ -61,15 +61,16 @@ public class FileStorageService {
         }catch (IOException e) {
             e.printStackTrace();
         }
+        return encode;
     }
 
     @Transactional(readOnly = true)
     public FileStorage findByHashId(String hashId) {
-        FileStorage byHashId = repository.findByHashId(hashId);
-        if (byHashId == null) {
-            return new FileStorage();
+        Optional<FileStorage> byHashId = repository.findByHashId(hashId);
+        if (byHashId.isPresent()) {
+            return repository.findByHashId(hashId).get();
         }
-        return repository.findByHashId(hashId);
+        return null;
     }
 
     private String getExt(String fileName) {

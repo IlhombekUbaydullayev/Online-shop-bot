@@ -140,6 +140,7 @@ public class UpdateController {
                         senderMessage(sendMessage, MENU);
                     }else if (text.equals(tx)){
                         Category category = categoryService.findAllByName(tx);
+
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, tx + " mahsulotlari",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()),false);
                         senderMessage(sendMessage, PRODUCTS);
@@ -178,11 +179,21 @@ public class UpdateController {
                         senderMessage(sendMessage, LOCATION);
                     }
                 } else if (currentUser.getState().equals(MY_LOCATION)) {
+                    addressService.findAllByUserId(currentUser.getId()).forEach(a -> {
+                        if (text.equals(a.getLatitude().toString())) {
+                            tx = text;
+                        }
+                    });
                     if (text.equals(BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK))) {
                         var sendMessage = replyKeyboardButton.shareLocation(update, "Joylashuvni kiriting!",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), senderButtonMessage(BTN_LOCATION), senderButtonMessage(BTN_MY_LOCATION));
                         senderMessage(sendMessage, LOCATION);
-                    } else {
+                    }else if (tx.equals(text)) {
+                        var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(),false);
+                        senderMessage(sendMessage, MENU);
+                    }
+                    else {
                         var sendMessage = replyKeyboardButton.myLocation(update, "Yetkazib berish manzilini tanlang",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), addressService.findAllByUserId(currentUser.getId()));
                         senderMessage(sendMessage, MY_LOCATION);

@@ -17,8 +17,8 @@ public class CategoryController {
     }
 
     @PostMapping("/category")
-    public ResponseEntity<?> create(@RequestBody Category categories) {
-        Category categories1 = service.create(categories);
+    public ResponseEntity<?> create(@RequestBody Category categories,@RequestParam String hashId) {
+        Category categories1 = service.create(categories,hashId);
         return ResponseEntity.ok(categories1);
     }
 
