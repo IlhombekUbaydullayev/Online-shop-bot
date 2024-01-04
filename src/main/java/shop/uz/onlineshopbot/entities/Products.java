@@ -14,6 +14,7 @@ import lombok.Setter;
 public class Products {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String name;
     private String amount;
     private String price;
     private String color;

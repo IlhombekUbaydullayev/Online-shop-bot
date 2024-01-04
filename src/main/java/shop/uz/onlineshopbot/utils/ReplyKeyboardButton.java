@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import shop.uz.onlineshopbot.entities.Address;
 import shop.uz.onlineshopbot.entities.Category;
+import shop.uz.onlineshopbot.entities.Products;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,6 +57,48 @@ public class ReplyKeyboardButton {
     }
 
     public SendMessage secondKeyboard(Update update, String text,String btnText, List<Category> categories,boolean isPhoto) {
+        count = 0;
+        var message = update.getMessage();
+        var sendMessage = new SendMessage();
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        List<KeyboardRow> rows = new ArrayList<>();
+        sendMessage.setChatId(message.getChatId());
+        KeyboardRow kr2 = new KeyboardRow();
+        sendMessage.setText(text);
+        categories.forEach(c -> {
+            KeyboardButton btn1 = new KeyboardButton();
+            btn1.setText(c.getName());
+            kr2.add(btn1);
+            if (count % 2 == 1) {
+                KeyboardRow kr1 = new KeyboardRow();
+                for (int i = count-1; i < kr2.size(); i++) {
+                    kr1.add(kr2.get(i));
+                }
+                rows.add(kr1);
+            }
+            count++;
+        });
+        if (kr2.size() % 2 != 0) {
+            KeyboardRow kr1 = new KeyboardRow();
+            kr1.add(kr2.get(kr2.size()-1));
+            KeyboardButton btn = new KeyboardButton();
+            btn.setText(btnText);
+            kr1.add(btn);
+            rows.add(kr1);
+        }else {
+            KeyboardRow kr1 = new KeyboardRow();
+            KeyboardButton btn = new KeyboardButton();
+            btn.setText(btnText);
+            kr1.add(btn);
+            rows.add(kr1);
+        }
+        System.out.println(kr2.size());
+        replyKeyboardMarkup.setKeyboard(rows);
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        return sendMessage;
+    }
+    public SendMessage secondKeyboards(Update update, String text, String btnText, List<Products> categories, boolean isPhoto) {
         count = 0;
         var message = update.getMessage();
         var sendMessage = new SendMessage();

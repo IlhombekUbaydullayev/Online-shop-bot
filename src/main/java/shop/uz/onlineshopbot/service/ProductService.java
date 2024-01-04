@@ -7,6 +7,8 @@ import shop.uz.onlineshopbot.entities.FileStorage;
 import shop.uz.onlineshopbot.entities.Products;
 import shop.uz.onlineshopbot.repositories.ProductRepository;
 
+import java.util.List;
+
 @Service
 public class ProductService {
     private final ProductRepository repository;
@@ -31,5 +33,9 @@ public class ProductService {
 
     public Products update(Products products) {
         return null;
+    }
+    
+    public List<Products> findByCategoryId(Long id) {
+        return repository.findAllByCategoryId(id);
     }
 }

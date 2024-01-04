@@ -1,8 +1,8 @@
 server:
   port: 8086
 bot:
-  name: onlineuzbeknewbot
-  token: 6723296213:AAGQ32RDVUc0Hee7F2szCK3VsBtvdyhQZYA
+  name: marketonlineshopbot
+  token: 6685793488:AAFlG6o_zjcDLzh8rlsdySjZ-0Co-jheL3k
 spring:
   main:
     allow-circular-references: true

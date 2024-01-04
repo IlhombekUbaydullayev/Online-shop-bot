@@ -16,10 +16,7 @@ import shop.uz.onlineshopbot.entities.Category;
 import shop.uz.onlineshopbot.entities.FileStorage;
 import shop.uz.onlineshopbot.entities.User;
 import shop.uz.onlineshopbot.enums.UserState;
-import shop.uz.onlineshopbot.service.AddressService;
-import shop.uz.onlineshopbot.service.CategoryService;
-import shop.uz.onlineshopbot.service.FileStorageService;
-import shop.uz.onlineshopbot.service.UserService;
+import shop.uz.onlineshopbot.service.*;
 import shop.uz.onlineshopbot.utils.MessageUtils;
 import shop.uz.onlineshopbot.utils.ReplyKeyboardButton;
 
@@ -41,6 +38,7 @@ public class UpdateController {
     private String uploadFolder;
     private MainBot mainBot;
     private final MessageUtils messageUtils;
+    private boolean isCheckeds = false;
 
     private final UserService userService;
 
@@ -51,19 +49,23 @@ public class UpdateController {
     private final ReplyKeyboardButton replyKeyboardButton;
 
     private final FileStorageService fileStorageService;
+
+    private final ProductService productService;
     ResourceBundleMessageSource bundle = new ResourceBundleMessageSource();
     Locale locale = null;
     int isChecked;
     private User currentUser;
+    List<Category> allByParentId = null;
 
     public UpdateController(MessageUtils messageUtils, UserService userService,
-                            CategoryService categoryService, AddressService addressService, ReplyKeyboardButton replyKeyboardButton, FileStorageService fileStorageService) {
+                            CategoryService categoryService, AddressService addressService, ReplyKeyboardButton replyKeyboardButton, FileStorageService fileStorageService, ProductService productService) {
         this.messageUtils = messageUtils;
         this.userService = userService;
         this.categoryService = categoryService;
         this.addressService = addressService;
         this.replyKeyboardButton = replyKeyboardButton;
         this.fileStorageService = fileStorageService;
+        this.productService = productService;
     }
 
     public void registerBot(MainBot mainBot) {
@@ -106,6 +108,7 @@ public class UpdateController {
             }
             default: {
                 if (currentUser.getState().equals(MENU)) {
+                    isCheckeds = false;
                     categoryService.findAll().forEach(c -> {
                         if (text.equals(c.getName())) {
                             tx = c.getName();
@@ -141,14 +144,21 @@ public class UpdateController {
                     }else if (text.equals(tx)){
                         Category category = categoryService.findAllByName(tx);
 
-                        var sendMessage = replyKeyboardButton.secondKeyboard(update, tx + " mahsulotlari",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()),false);
+                        var sendMessage = replyKeyboardButton.secondKeyboards(update, tx + " mahsulotlari",
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()),false);
+                        photo(update, category.getFileStorage().getHashId());
                         senderMessage(sendMessage, PRODUCTS);
                         log.info(tx);
                     }else {
+                        log.info("Inline wrong answer " + tx);
                         Category category = categoryService.findAllByName(tx);
+                        if (!isCheckeds) {
+                            allByParentId = categoryService.findAllByParentId(category.getId());
+                        }else {
+                            allByParentId = categoryService.findAllByParentId(category.getParentId());
+                        }
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()),false);
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK),allByParentId,false);
                         senderMessage(sendMessage, INLINE);
                     }
                 } else if (currentUser.getState().equals(START)) {
@@ -197,6 +207,34 @@ public class UpdateController {
                         var sendMessage = replyKeyboardButton.myLocation(update, "Yetkazib berish manzilini tanlang",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), addressService.findAllByUserId(currentUser.getId()));
                         senderMessage(sendMessage, MY_LOCATION);
+                    }
+                }else if (currentUser.getState().equals(PRODUCTS)) {
+                    Category categories = categoryService.findAllByName(text);
+                    if (text.equals(categories.getName())) {
+                        tx = categories.getName();
+                    }
+                    System.out.println("My text + " + tx + " and bot text + " + text) ;
+                    if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
+                        Category category = categoryService.findAllByName(tx);
+                        var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getParentId()),false);
+                        senderMessage(sendMessage, INLINE);
+                        isCheckeds = true;
+                    }else if (text.equals(tx)){
+                        Category category = categoryService.findAllByName(tx);
+
+                        var sendMessage = replyKeyboardButton.secondKeyboards(update, tx + " mahsulotlari",
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()),false);
+                        photo(update, category.getFileStorage().getHashId());
+                        senderMessage(sendMessage, PRODUCTS);
+                        log.info(tx);
+                    }else {
+                        Category category = categoryService.findAllByName(tx);
+
+                        var sendMessage = replyKeyboardButton.secondKeyboards(update, tx + " mahsulotlari",
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()),false);
+                        photo(update, category.getFileStorage().getHashId());
+                        senderMessage(sendMessage, PRODUCTS);
                     }
                 }
                 break;
