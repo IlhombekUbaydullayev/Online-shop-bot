@@ -23,4 +23,7 @@ public class User {
     private String name;
     @OneToMany( mappedBy = "users")
     private List<Address> address;
+    private String tx = "";
+    private boolean isCheckeds = false;
+    private int isChecked;
 }

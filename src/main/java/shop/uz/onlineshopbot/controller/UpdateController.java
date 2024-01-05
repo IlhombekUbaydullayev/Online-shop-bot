@@ -32,13 +32,11 @@ import static shop.uz.onlineshopbot.utils.TranslationCode.*;
 @Component
 @Slf4j
 public class UpdateController {
-    String tx = "";
 
     @Value("${upload.folder}")
     private String uploadFolder;
     private MainBot mainBot;
     private final MessageUtils messageUtils;
-    private boolean isCheckeds = false;
 
     private final UserService userService;
 
@@ -53,7 +51,6 @@ public class UpdateController {
     private final ProductService productService;
     ResourceBundleMessageSource bundle = new ResourceBundleMessageSource();
     Locale locale = null;
-    int isChecked;
     private User currentUser;
     List<Category> allByParentId = null;
 
@@ -108,14 +105,16 @@ public class UpdateController {
             }
             default: {
                 if (currentUser.getState().equals(MENU)) {
-                    isCheckeds = false;
+                    currentUser.setCheckeds(false);
+                    userService.update(currentUser.getId(),currentUser);
                     categoryService.findAll().forEach(c -> {
                         if (text.equals(c.getName())) {
-                            tx = c.getName();
+                            currentUser.setTx(c.getName());
+                            userService.update(currentUser.getId(),currentUser);
                         }
                     });
-                    if (text.equals(tx)) {
-                        Category category = categoryService.findAllByName(tx);
+                    if (text.equals(currentUser.getTx())) {
+                        Category category = categoryService.findAllByName(currentUser.getTx());
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()),false);
                         if (category.getFileStorage() != null) {
@@ -134,25 +133,23 @@ public class UpdateController {
                 } else if (currentUser.getState().equals(INLINE)) {
                     Category categories = categoryService.findAllByName(text);
                     if (text.equals(categories.getName())) {
-                        tx = categories.getName();
+                        currentUser.setTx(categories.getName());
+                        userService.update(currentUser.getId(),currentUser);
                     }
-                    System.out.println("My text + " + tx + " and bot text + " + text) ;
                     if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(),false);
                         senderMessage(sendMessage, MENU);
-                    }else if (text.equals(tx)){
-                        Category category = categoryService.findAllByName(tx);
+                    }else if (text.equals(currentUser.getTx())){
+                        Category category = categoryService.findAllByName(currentUser.getTx());
 
-                        var sendMessage = replyKeyboardButton.secondKeyboards(update, tx + " mahsulotlari",
+                        var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlari",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()),false);
                         photo(update, category.getFileStorage().getHashId());
                         senderMessage(sendMessage, PRODUCTS);
-                        log.info(tx);
                     }else {
-                        log.info("Inline wrong answer " + tx);
-                        Category category = categoryService.findAllByName(tx);
-                        if (!isCheckeds) {
+                        Category category = categoryService.findAllByName(currentUser.getTx());
+                        if (!currentUser.isCheckeds()) {
                             allByParentId = categoryService.findAllByParentId(category.getId());
                         }else {
                             allByParentId = categoryService.findAllByParentId(category.getParentId());
@@ -191,14 +188,15 @@ public class UpdateController {
                 } else if (currentUser.getState().equals(MY_LOCATION)) {
                     addressService.findAllByUserId(currentUser.getId()).forEach(a -> {
                         if (text.equals(a.getLatitude().toString())) {
-                            tx = text;
+                            currentUser.setTx(text);
+                            userService.update(currentUser.getId(),currentUser);
                         }
                     });
                     if (text.equals(BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK))) {
                         var sendMessage = replyKeyboardButton.shareLocation(update, "Joylashuvni kiriting!",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), senderButtonMessage(BTN_LOCATION), senderButtonMessage(BTN_MY_LOCATION));
                         senderMessage(sendMessage, LOCATION);
-                    }else if (tx.equals(text)) {
+                    }else if (currentUser.getTx().equals(text)) {
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(),false);
                         senderMessage(sendMessage, MENU);
@@ -211,27 +209,27 @@ public class UpdateController {
                 }else if (currentUser.getState().equals(PRODUCTS)) {
                     Category categories = categoryService.findAllByName(text);
                     if (text.equals(categories.getName())) {
-                        tx = categories.getName();
+                        currentUser.setTx(categories.getName());
+                        userService.update(currentUser.getId(),currentUser);
                     }
-                    System.out.println("My text + " + tx + " and bot text + " + text) ;
                     if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
-                        Category category = categoryService.findAllByName(tx);
+                        Category category = categoryService.findAllByName(currentUser.getTx());
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getParentId()),false);
                         senderMessage(sendMessage, INLINE);
-                        isCheckeds = true;
-                    }else if (text.equals(tx)){
-                        Category category = categoryService.findAllByName(tx);
+                        currentUser.setCheckeds(true);
+                        userService.update(currentUser.getId(),currentUser);
+                    }else if (text.equals(currentUser.getTx())){
+                        Category category = categoryService.findAllByName(currentUser.getTx());
 
-                        var sendMessage = replyKeyboardButton.secondKeyboards(update, tx + " mahsulotlari",
+                        var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlari",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()),false);
                         photo(update, category.getFileStorage().getHashId());
                         senderMessage(sendMessage, PRODUCTS);
-                        log.info(tx);
                     }else {
-                        Category category = categoryService.findAllByName(tx);
+                        Category category = categoryService.findAllByName(currentUser.getTx());
 
-                        var sendMessage = replyKeyboardButton.secondKeyboards(update, tx + " mahsulotlari",
+                        var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlari",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()),false);
                         photo(update, category.getFileStorage().getHashId());
                         senderMessage(sendMessage, PRODUCTS);
@@ -245,7 +243,8 @@ public class UpdateController {
     }
 
     private void processLocation(Update update) {
-        isChecked = 0;
+        currentUser.setIsChecked(0);
+        userService.update(currentUser.getId(),currentUser);
         var message = update.getMessage();
         message.getLocation().toString();
         Location location = message.getLocation();
@@ -260,10 +259,11 @@ public class UpdateController {
         List<Address> allByUserId = addressService.findAllByUserId(user.getId());
         allByUserId.forEach(a -> {
             if (a.getLatitude().equals(address.getLatitude()) && a.getLongitude().equals(address.getLongitude())) {
-                isChecked ++;
+                currentUser.setIsChecked(currentUser.getIsChecked()+1);
+                userService.update(currentUser.getId(),currentUser);
             }
         });
-        if (isChecked == 0) {
+        if (currentUser.getIsChecked() == 0) {
             Address address1 = addressService.create(address);
             allByUserId.add(address1);
             currentUser.setAddress(allByUserId);

@@ -32,6 +32,8 @@ public class UserService {
             user2.setName(user.getName());
             user2.setState(user.getState());
             user2.setAddress(user.getAddress());
+            user2.setTx(user.getTx());
+            user2.setCheckeds(user.isCheckeds());
             userRepository.save(user2);
             return user2;
         }
