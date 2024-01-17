@@ -26,7 +26,11 @@ public class OnlineShopBotApplication {
 
     public static void main(String[] args) throws TelegramApiException {
         SpringApplication.run(OnlineShopBotApplication.class, args);
-
+//        System.getProperties().put("proxySet", "true");
+//
+//        System.getProperties().put("socksProxyHost", "127.0.0.1");
+//
+//        System.getProperties().put("socksProxyPort", "9150");
 //        ClientConfig config = new ClientConfig();
 //        Client client = ClientBuilder.newClient(config);
 //        WebTarget target = client.target(getBaseURI());

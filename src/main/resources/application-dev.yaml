@@ -4,6 +4,12 @@ bot:
   name: marketonlineshopbot
   token: 6685793488:AAFlG6o_zjcDLzh8rlsdySjZ-0Co-jheL3k
 spring:
+  flyway:
+#    password: 1111111111
+#    user: postgres
+#    url: jdbc:postgresql://localhost:5432/online_shop
+    baseline-on-migrate: true
+
   main:
     allow-circular-references: true
   datasource:
@@ -17,8 +23,8 @@ spring:
       max-lifetime: 1800000
   jpa:
     generate-ddl: false
-    hibernate:
-      ddl-auto: update
+#    hibernate:
+#      ddl-auto: update
     show-sql: true
     properties:
       hibernate:

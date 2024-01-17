@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS orders
+(
+    id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL
+
+);

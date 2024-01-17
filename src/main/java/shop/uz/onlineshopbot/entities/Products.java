@@ -1,14 +1,12 @@
 package shop.uz.onlineshopbot.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Products {
@@ -18,6 +16,8 @@ public class Products {
     private String amount;
     private String price;
     private String color;
+    private int mini;
+    private int big;
     @OneToOne
     private FileStorage fileStorage = null;
     @ManyToOne

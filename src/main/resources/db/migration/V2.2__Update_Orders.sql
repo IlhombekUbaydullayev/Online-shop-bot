@@ -1,0 +1,2 @@
+ALTER TABLE Orders
+ADD COLUMN color varchar(255) NOT NULL
