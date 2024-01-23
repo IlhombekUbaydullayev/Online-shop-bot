@@ -11,10 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import shop.uz.onlineshopbot.bot.MainBot;
-import shop.uz.onlineshopbot.entities.Address;
-import shop.uz.onlineshopbot.entities.Category;
-import shop.uz.onlineshopbot.entities.FileStorage;
-import shop.uz.onlineshopbot.entities.User;
+import shop.uz.onlineshopbot.entities.*;
 import shop.uz.onlineshopbot.enums.UserState;
 import shop.uz.onlineshopbot.service.*;
 import shop.uz.onlineshopbot.utils.MessageUtils;
@@ -147,6 +144,8 @@ public class UpdateController {
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()),false);
                         photo(update, category.getFileStorage().getHashId());
                         senderMessage(sendMessage, PRODUCTS);
+                        currentUser.setCheckeds(false);
+                        userService.update(currentUser.getId(),currentUser);
                     }else {
                         Category category = categoryService.findAllByName(currentUser.getTx());
                         if (!currentUser.isCheckeds()) {
@@ -208,31 +207,54 @@ public class UpdateController {
                     }
                 }else if (currentUser.getState().equals(PRODUCTS)) {
                     Category categories = categoryService.findAllByName(text);
+                    Products products = productService.findByName(text);
                     if (text.equals(categories.getName())) {
                         currentUser.setTx(categories.getName());
                         userService.update(currentUser.getId(),currentUser);
                     }
+                    else if (text.equals(products.getName())) {
+                        currentUser.setTx(products.getName());
+                        userService.update(currentUser.getId(),currentUser);
+                    }
                     if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
-                        Category category = categoryService.findAllByName(currentUser.getTx());
-                        var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getParentId()),false);
-                        senderMessage(sendMessage, INLINE);
+                        if (!currentUser.isCheckeds()) {
+                            Category category = categoryService.findAllByName(currentUser.getTx());
+                            var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
+                                    BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getParentId()),false);
+                            photo(update, category.getFileStorage().getHashId());
+                            senderMessage(sendMessage, INLINE);
+                        }else {
+                            Products category = productService.findByName(currentUser.getTx());
+                            Category category1 = categoryService.findById(category.getCategory().getId());
+                            var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
+                                    BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category1.getParentId()),false);
+                            photo(update, category.getFileStorage().getHashId());
+                            senderMessage(sendMessage, INLINE);
+                        }
                         currentUser.setCheckeds(true);
                         userService.update(currentUser.getId(),currentUser);
                     }else if (text.equals(currentUser.getTx())){
-                        Category category = categoryService.findAllByName(currentUser.getTx());
-
-                        var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlari",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()),false);
-                        photo(update, category.getFileStorage().getHashId());
-                        senderMessage(sendMessage, PRODUCTS);
+                        Products products1 = productService.findByName(currentUser.getTx());
+                        var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx(),
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK),BTN_ORDER_EMOJI,false);
+                        senderMessage(sendMessage, ORDER_DEFAULT);
                     }else {
                         Category category = categoryService.findAllByName(currentUser.getTx());
 
-                        var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlari",
+                        var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlar",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()),false);
                         photo(update, category.getFileStorage().getHashId());
                         senderMessage(sendMessage, PRODUCTS);
+                    }
+                }else if (currentUser.getState().equals(ORDER_DEFAULT)) {
+                    if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
+                        Products product = productService.findByName(currentUser.getTx());
+
+                        var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlar",
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(product.getCategory().getId()),false);
+                        senderMessage(sendMessage, PRODUCTS);
+                        currentUser.setCheckeds(true);
+                        userService.update(currentUser.getId(),currentUser);
                     }
                 }
                 break;

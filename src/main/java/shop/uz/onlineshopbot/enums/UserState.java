@@ -8,5 +8,7 @@ public enum UserState {
     REGISTER,
     LOCATION,
     MY_LOCATION,
-    PRODUCTS
+    PRODUCTS,
+    ORDER_DEFAULT,
+    ORDER
 }

@@ -54,4 +54,12 @@ public class ProductService {
     public List<Products> findByCategoryId(Long id) {
         return repository.findAllByCategoryId(id);
     }
+
+    public Products findByName(String name) {
+        Optional<Products> product = repository.findByName(name);
+        if (product.isPresent()) {
+            return product.get();
+        }
+        return new Products();
+    }
 }

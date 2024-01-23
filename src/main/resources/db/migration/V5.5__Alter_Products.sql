@@ -1,3 +1,0 @@
--- ALTER TABLE Products
--- ADD COLUMN mini INT DEFAULT '0',
--- ADD COLUMN big INT DEFAULT '0';

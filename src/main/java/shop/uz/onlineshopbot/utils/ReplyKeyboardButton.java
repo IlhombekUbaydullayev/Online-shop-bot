@@ -141,6 +141,30 @@ public class ReplyKeyboardButton {
         return sendMessage;
     }
 
+    public SendMessage secondKeyboards(Update update, String text, String btnText,String emoji,boolean isPhoto) {
+        count = 0;
+        var message = update.getMessage();
+        var sendMessage = new SendMessage();
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        List<KeyboardRow> rows = new ArrayList<>();
+        sendMessage.setChatId(message.getChatId());
+        sendMessage.setText(text);
+        KeyboardRow kr1 = new KeyboardRow();
+        KeyboardRow kr2 = new KeyboardRow();
+        KeyboardButton btn = new KeyboardButton();
+        KeyboardButton btn1 = new KeyboardButton();
+        btn.setText(btnText);
+        btn1.setText(emoji);
+        kr1.add(btn);
+        kr2.add(btn1);
+        rows.add(kr2);
+        rows.add(kr1);
+        replyKeyboardMarkup.setKeyboard(rows);
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        return sendMessage;
+    }
+
     public SendMessage shareLocation(Update update,String text,String btn,String btnGeolocation,String myLocation) {
         var message = update.getMessage();
         var sendMessage = new SendMessage();
