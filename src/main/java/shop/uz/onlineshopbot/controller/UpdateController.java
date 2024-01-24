@@ -219,16 +219,18 @@ public class UpdateController {
                     if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
                         if (!currentUser.isCheckeds()) {
                             Category category = categoryService.findAllByName(currentUser.getTx());
+                            Category category1 = categoryService.findByParentId(category.getParentId());
                             var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
                                     BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getParentId()),false);
-                            photo(update, category.getFileStorage().getHashId());
+                            photo(update, category1.getFileStorage().getHashId());
                             senderMessage(sendMessage, INLINE);
                         }else {
                             Products category = productService.findByName(currentUser.getTx());
                             Category category1 = categoryService.findById(category.getCategory().getId());
+                            Category category2 = categoryService.findByParentId(category1.getParentId());
                             var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
                                     BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category1.getParentId()),false);
-                            photo(update, category.getFileStorage().getHashId());
+                            photo(update, category2.getFileStorage().getHashId());
                             senderMessage(sendMessage, INLINE);
                         }
                         currentUser.setCheckeds(true);
@@ -249,11 +251,12 @@ public class UpdateController {
                 }else if (currentUser.getState().equals(ORDER_DEFAULT)) {
                     if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
                         Products product = productService.findByName(currentUser.getTx());
-
+                        Category category = categoryService.findById(product.getCategory().getId());
                         var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlar",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(product.getCategory().getId()),false);
                         senderMessage(sendMessage, PRODUCTS);
                         currentUser.setCheckeds(true);
+                        photo(update, category.getFileStorage().getHashId());
                         userService.update(currentUser.getId(),currentUser);
                     }
                 }

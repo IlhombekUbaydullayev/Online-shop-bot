@@ -50,6 +50,11 @@ public class CategoryService {
         return repository.findAllByParentId(parentId);
     }
 
+    public Category findByParentId(Long parentId) {
+        Optional<Category> category = repository.findById(parentId);
+        return category.orElseGet(Category::new);
+    }
+
     public Category update(Long categoryId,Category category) {
         Optional<Category> category1 = repository.findById(categoryId);
 
