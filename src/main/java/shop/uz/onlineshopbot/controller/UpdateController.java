@@ -14,6 +14,7 @@ import shop.uz.onlineshopbot.bot.MainBot;
 import shop.uz.onlineshopbot.entities.*;
 import shop.uz.onlineshopbot.enums.UserState;
 import shop.uz.onlineshopbot.service.*;
+import shop.uz.onlineshopbot.utils.InlineKeyboardButtons;
 import shop.uz.onlineshopbot.utils.MessageUtils;
 import shop.uz.onlineshopbot.utils.ReplyKeyboardButton;
 
@@ -43,6 +44,8 @@ public class UpdateController {
 
     private final ReplyKeyboardButton replyKeyboardButton;
 
+    private final InlineKeyboardButtons inlineKeyboardButton;
+
     private final FileStorageService fileStorageService;
 
     private final ProductService productService;
@@ -52,12 +55,13 @@ public class UpdateController {
     List<Category> allByParentId = null;
 
     public UpdateController(MessageUtils messageUtils, UserService userService,
-                            CategoryService categoryService, AddressService addressService, ReplyKeyboardButton replyKeyboardButton, FileStorageService fileStorageService, ProductService productService) {
+                            CategoryService categoryService, AddressService addressService, ReplyKeyboardButton replyKeyboardButton, InlineKeyboardButtons inlineKeyboardButton, FileStorageService fileStorageService, ProductService productService) {
         this.messageUtils = messageUtils;
         this.userService = userService;
         this.categoryService = categoryService;
         this.addressService = addressService;
         this.replyKeyboardButton = replyKeyboardButton;
+        this.inlineKeyboardButton = inlineKeyboardButton;
         this.fileStorageService = fileStorageService;
         this.productService = productService;
     }
@@ -239,6 +243,9 @@ public class UpdateController {
                         Products products1 = productService.findByName(currentUser.getTx());
                         var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx(),
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK),BTN_ORDER_EMOJI,false);
+                        photo(update, products1.getFileStorage().getHashId());
+                        var senderMessage2 = inlineKeyboardButton.orderKeyboards(update);
+                        senderMessage(senderMessage2, ORDER_DEFAULT);
                         senderMessage(sendMessage, ORDER_DEFAULT);
                     }else {
                         Category category = categoryService.findAllByName(currentUser.getTx());
@@ -249,6 +256,7 @@ public class UpdateController {
                         senderMessage(sendMessage, PRODUCTS);
                     }
                 }else if (currentUser.getState().equals(ORDER_DEFAULT)) {
+                    Products byName = productService.findByName(text);
                     if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
                         Products product = productService.findByName(currentUser.getTx());
                         Category category = categoryService.findById(product.getCategory().getId());
@@ -258,6 +266,8 @@ public class UpdateController {
                         currentUser.setCheckeds(true);
                         photo(update, category.getFileStorage().getHashId());
                         userService.update(currentUser.getId(),currentUser);
+                    }else if (text.equals(byName.getName())) {
+
                     }
                 }
                 break;
