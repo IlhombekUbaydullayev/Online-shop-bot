@@ -151,7 +151,7 @@ public class ReplyKeyboardButton {
         replyKeyboardMarkup.setResizeKeyboard(true);
         List<KeyboardRow> rows = new ArrayList<>();
         sendMessage.setChatId(message.getChatId());
-        sendMessage.setText(text);
+        sendMessage.setText("<i>" + text + "</i>");
         KeyboardRow kr1 = new KeyboardRow();
         KeyboardRow kr2 = new KeyboardRow();
         KeyboardButton btn = new KeyboardButton();
@@ -164,6 +164,8 @@ public class ReplyKeyboardButton {
         rows.add(kr1);
         replyKeyboardMarkup.setKeyboard(rows);
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        sendMessage.enableHtml(true);
+//        sendMessage.enableMarkdown(true);
         return sendMessage;
     }
 

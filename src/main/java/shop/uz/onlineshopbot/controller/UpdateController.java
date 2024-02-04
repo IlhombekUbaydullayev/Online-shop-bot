@@ -6,10 +6,14 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import shop.uz.onlineshopbot.bot.MainBot;
 import shop.uz.onlineshopbot.entities.*;
 import shop.uz.onlineshopbot.enums.UserState;
@@ -71,12 +75,15 @@ public class UpdateController {
     }
 
     public void processUpdate(Update update) throws Exception {
-        if (update == null) {
-            return;
-        }
-        if (update.getMessage() != null) {
+        if (update.hasMessage()) {
             distrubuteMessageType(update);
+        } else if (update.hasCallbackQuery()) {
+            distrubuteCallbackType(update);
         }
+    }
+
+    private void distrubuteCallbackType(Update update) {
+        processCallbackMessage(update);
     }
 
     private void distrubuteMessageType(Update update) throws Exception {
@@ -92,6 +99,8 @@ public class UpdateController {
     }
 
     private void processTextMessage(Update update) throws FileNotFoundException {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setOneTimeKeyboard(true);
         String text = update.getMessage().getText();
         bundle.setBasenames("text");
         bundle.setDefaultEncoding("UTF-8");
@@ -100,65 +109,65 @@ public class UpdateController {
             case "/start": {
                 var sendMessage = replyKeyboardButton.firstKeyboard(update, "Quyidagilardan birini tanlang!",
                         senderButtonMessage(BTN_PRODUCtS), senderButtonMessage(BTN_ORDERS), BTN_COMMENT_EMOJI +
-                                senderButtonMessage(BTN_COMMENT),BTN_SETTING_EMOJI+senderButtonMessage(BTN_SETTING));
+                                senderButtonMessage(BTN_COMMENT), BTN_SETTING_EMOJI + senderButtonMessage(BTN_SETTING));
                 senderMessage(sendMessage, START);
                 break;
             }
             default: {
                 if (currentUser.getState().equals(MENU)) {
                     currentUser.setCheckeds(false);
-                    userService.update(currentUser.getId(),currentUser);
+                    userService.update(currentUser.getId(), currentUser);
                     categoryService.findAll().forEach(c -> {
                         if (text.equals(c.getName())) {
                             currentUser.setTx(c.getName());
-                            userService.update(currentUser.getId(),currentUser);
+                            userService.update(currentUser.getId(), currentUser);
                         }
                     });
                     if (text.equals(currentUser.getTx())) {
                         Category category = categoryService.findAllByName(currentUser.getTx());
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()),false);
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()), false);
                         if (category.getFileStorage() != null) {
                             photo(update, category.getFileStorage().getHashId());
                         }
                         senderMessage(sendMessage, INLINE);
                     } else if (text.equals(BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK))) {
                         var sendMessage = replyKeyboardButton.shareLocation(update, "Joylashuvni kiriting!",
-                                BTN_BACK_EMOJIES+senderButtonMessage(BTN_BACK), senderButtonMessage(BTN_LOCATION), senderButtonMessage(BTN_MY_LOCATION));
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), senderButtonMessage(BTN_LOCATION), senderButtonMessage(BTN_MY_LOCATION));
                         senderMessage(sendMessage, LOCATION);
                     } else {
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(),false);
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(), false);
                         senderMessage(sendMessage, MENU);
                     }
                 } else if (currentUser.getState().equals(INLINE)) {
                     Category categories = categoryService.findAllByName(text);
                     if (text.equals(categories.getName())) {
                         currentUser.setTx(categories.getName());
-                        userService.update(currentUser.getId(),currentUser);
+                        userService.update(currentUser.getId(), currentUser);
                     }
                     if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(),false);
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(), false);
                         senderMessage(sendMessage, MENU);
-                    }else if (text.equals(currentUser.getTx())){
+                    } else if (text.equals(currentUser.getTx())) {
                         Category category = categoryService.findAllByName(currentUser.getTx());
 
                         var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlari",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()),false);
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()), false);
                         photo(update, category.getFileStorage().getHashId());
                         senderMessage(sendMessage, PRODUCTS);
                         currentUser.setCheckeds(false);
-                        userService.update(currentUser.getId(),currentUser);
-                    }else {
+                        userService.update(currentUser.getId(), currentUser);
+                    } else {
                         Category category = categoryService.findAllByName(currentUser.getTx());
                         if (!currentUser.isCheckeds()) {
                             allByParentId = categoryService.findAllByParentId(category.getId());
-                        }else {
+                        } else {
                             allByParentId = categoryService.findAllByParentId(category.getParentId());
                         }
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK),allByParentId,false);
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), allByParentId, false);
                         senderMessage(sendMessage, INLINE);
                     }
                 } else if (currentUser.getState().equals(START)) {
@@ -170,14 +179,14 @@ public class UpdateController {
                     } else {
                         var sendMessage = replyKeyboardButton.firstKeyboard(update, "Quyidagilardan birini tanlang!",
                                 senderButtonMessage(BTN_PRODUCtS), senderButtonMessage(BTN_ORDERS),
-                                BTN_COMMENT_EMOJI + senderButtonMessage(BTN_COMMENT),BTN_SETTING_EMOJI+senderButtonMessage(BTN_SETTING));
+                                BTN_COMMENT_EMOJI + senderButtonMessage(BTN_COMMENT), BTN_SETTING_EMOJI + senderButtonMessage(BTN_SETTING));
                         senderMessage(sendMessage, START);
                     }
                 } else if (currentUser.getState().equals(LOCATION)) {
                     if (text.equals(BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK))) {
                         var sendMessage = replyKeyboardButton.firstKeyboard(update, "Quyidagilardan birini tanlang!",
                                 senderButtonMessage(BTN_PRODUCtS), senderButtonMessage(BTN_ORDERS), BTN_COMMENT_EMOJI +
-                                        senderButtonMessage(BTN_COMMENT),BTN_SETTING_EMOJI+senderButtonMessage(BTN_SETTING));
+                                        senderButtonMessage(BTN_COMMENT), BTN_SETTING_EMOJI + senderButtonMessage(BTN_SETTING));
                         senderMessage(sendMessage, START);
                     } else if (text.equals(senderButtonMessage(BTN_MY_LOCATION))) {
                         var sendMessage = replyKeyboardButton.myLocation(update, "Yetkazib berish manzilini tanlang", BTN_BACK_EMOJIES +
@@ -192,81 +201,88 @@ public class UpdateController {
                     addressService.findAllByUserId(currentUser.getId()).forEach(a -> {
                         if (text.equals(a.getLatitude().toString())) {
                             currentUser.setTx(text);
-                            userService.update(currentUser.getId(),currentUser);
+                            userService.update(currentUser.getId(), currentUser);
                         }
                     });
                     if (text.equals(BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK))) {
                         var sendMessage = replyKeyboardButton.shareLocation(update, "Joylashuvni kiriting!",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), senderButtonMessage(BTN_LOCATION), senderButtonMessage(BTN_MY_LOCATION));
                         senderMessage(sendMessage, LOCATION);
-                    }else if (currentUser.getTx().equals(text)) {
+                    } else if (currentUser.getTx().equals(text)) {
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(),false);
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(), false);
                         senderMessage(sendMessage, MENU);
-                    }
-                    else {
+                    } else {
                         var sendMessage = replyKeyboardButton.myLocation(update, "Yetkazib berish manzilini tanlang",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), addressService.findAllByUserId(currentUser.getId()));
                         senderMessage(sendMessage, MY_LOCATION);
                     }
-                }else if (currentUser.getState().equals(PRODUCTS)) {
+                } else if (currentUser.getState().equals(PRODUCTS)) {
+
                     Category categories = categoryService.findAllByName(text);
                     Products products = productService.findByName(text);
                     if (text.equals(categories.getName())) {
                         currentUser.setTx(categories.getName());
-                        userService.update(currentUser.getId(),currentUser);
-                    }
-                    else if (text.equals(products.getName())) {
+                        userService.update(currentUser.getId(), currentUser);
+                    } else if (text.equals(products.getName())) {
                         currentUser.setTx(products.getName());
-                        userService.update(currentUser.getId(),currentUser);
+                        userService.update(currentUser.getId(), currentUser);
                     }
                     if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
                         if (!currentUser.isCheckeds()) {
                             Category category = categoryService.findAllByName(currentUser.getTx());
                             Category category1 = categoryService.findByParentId(category.getParentId());
                             var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
-                                    BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getParentId()),false);
+                                    BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getParentId()), false);
                             photo(update, category1.getFileStorage().getHashId());
                             senderMessage(sendMessage, INLINE);
-                        }else {
+                        } else {
                             Products category = productService.findByName(currentUser.getTx());
                             Category category1 = categoryService.findById(category.getCategory().getId());
                             Category category2 = categoryService.findByParentId(category1.getParentId());
                             var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
-                                    BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category1.getParentId()),false);
+                                    BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category1.getParentId()), false);
                             photo(update, category2.getFileStorage().getHashId());
                             senderMessage(sendMessage, INLINE);
                         }
                         currentUser.setCheckeds(true);
-                        userService.update(currentUser.getId(),currentUser);
-                    }else if (text.equals(currentUser.getTx())){
+                        userService.update(currentUser.getId(), currentUser);
+                    } else if (text.equals(currentUser.getTx())) {
                         Products products1 = productService.findByName(currentUser.getTx());
-                        var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx(),
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK),BTN_ORDER_EMOJI,false);
-                        photo(update, products1.getFileStorage().getHashId());
-                        var senderMessage2 = inlineKeyboardButton.orderKeyboards(update);
-                        senderMessage(senderMessage2, ORDER_DEFAULT);
+                        var sendMessage = replyKeyboardButton.secondKeyboards(update, "Quyidagilardan birini tanlang",
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), BTN_ORDER_EMOJI, false);
                         senderMessage(sendMessage, ORDER_DEFAULT);
-                    }else {
-                        Category category = categoryService.findAllByName(currentUser.getTx());
+                        uploadPhotoWithInlineKeyboardButton(update, products1.getFileStorage().getHashId(), products);
+                    } else {
+                        if (!currentUser.isCheckeds()) {
+                            Category category = categoryService.findAllByName(currentUser.getTx());
 
-                        var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlar",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()),false);
-                        photo(update, category.getFileStorage().getHashId());
-                        senderMessage(sendMessage, PRODUCTS);
+                            var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlari",
+                                    BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(category.getId()), false);
+                            photo(update, category.getFileStorage().getHashId());
+                            senderMessage(sendMessage, PRODUCTS);
+                        } else {
+                            Products products1 = productService.findByName(currentUser.getTx());
+                            Category category = categoryService.findById(products1.getCategory().getId());
+
+                            var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlari",
+                                    BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(products1.getCategory().getId()), false);
+                            photo(update, category.getFileStorage().getHashId());
+                            senderMessage(sendMessage, PRODUCTS);
+                        }
                     }
-                }else if (currentUser.getState().equals(ORDER_DEFAULT)) {
+                } else if (currentUser.getState().equals(ORDER_DEFAULT)) {
                     Products byName = productService.findByName(text);
                     if (text.equals(BTN_BACK_EMOJIES + bundle.getMessage(BTN_BACK, null, locale))) {
                         Products product = productService.findByName(currentUser.getTx());
                         Category category = categoryService.findById(product.getCategory().getId());
                         var sendMessage = replyKeyboardButton.secondKeyboards(update, currentUser.getTx() + " mahsulotlar",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(product.getCategory().getId()),false);
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), productService.findByCategoryId(product.getCategory().getId()), false);
                         senderMessage(sendMessage, PRODUCTS);
                         currentUser.setCheckeds(true);
                         photo(update, category.getFileStorage().getHashId());
-                        userService.update(currentUser.getId(),currentUser);
-                    }else if (text.equals(byName.getName())) {
+                        userService.update(currentUser.getId(), currentUser);
+                    } else if (text.equals(byName.getName())) {
 
                     }
                 }
@@ -279,7 +295,7 @@ public class UpdateController {
 
     private void processLocation(Update update) {
         currentUser.setIsChecked(0);
-        userService.update(currentUser.getId(),currentUser);
+        userService.update(currentUser.getId(), currentUser);
         var message = update.getMessage();
         message.getLocation().toString();
         Location location = message.getLocation();
@@ -289,13 +305,13 @@ public class UpdateController {
                 .build();
 
         User user = userService.findOne(currentUser.getId());
-        System.out.println(addressService.findByLatLong(user.getId(),address.getLatitude(), address.getLongitude()));
+        System.out.println(addressService.findByLatLong(user.getId(), address.getLatitude(), address.getLongitude()));
         address.setUsers(user);
         List<Address> allByUserId = addressService.findAllByUserId(user.getId());
         allByUserId.forEach(a -> {
             if (a.getLatitude().equals(address.getLatitude()) && a.getLongitude().equals(address.getLongitude())) {
-                currentUser.setIsChecked(currentUser.getIsChecked()+1);
-                userService.update(currentUser.getId(),currentUser);
+                currentUser.setIsChecked(currentUser.getIsChecked() + 1);
+                userService.update(currentUser.getId(), currentUser);
             }
         });
         if (currentUser.getIsChecked() == 0) {
@@ -304,9 +320,22 @@ public class UpdateController {
             currentUser.setAddress(allByUserId);
         }
         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
-                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(),false);
+                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(), false);
         senderMessage(sendMessage, MENU);
         System.out.println(location.getLongitude() + "," + location.getLatitude());
+    }
+
+    private void processCallbackMessage(Update update) {
+        Long chatId = update.getCallbackQuery().getFrom().getId();
+        String data = update.getCallbackQuery().getData();
+        currentUser = findCurrentUser(chatId);
+        if (currentUser.getState().equals(ORDER_DEFAULT)) {
+            var sendMessage = inlineKeyboardButton.orderKeyboardsOrder(update);
+            editMessage(sendMessage, ORDER_DEFAULT);
+            log.info("DATA from : " + data);
+            log.info("DATA from message id : " + update.getCallbackQuery().getMessage().getMessageId());
+
+        }
     }
 
 
@@ -318,11 +347,21 @@ public class UpdateController {
         mainBot.sendAnswerMessage(sendMessage);
     }
 
+    private void setView(EditMessageReplyMarkup sendMessage) {
+        mainBot.sendAnswerMessage(sendMessage);
+    }
+
     private String senderButtonMessage(String text) {
         return bundle.getMessage(text, null, locale);
     }
 
     private void senderMessage(SendMessage sendMessage, UserState state) {
+        setView(sendMessage);
+        currentUser.setState(state);
+        userService.update(currentUser.getId(), currentUser);
+    }
+
+    private void editMessage(EditMessageReplyMarkup sendMessage, UserState state) {
         setView(sendMessage);
         currentUser.setState(state);
         userService.update(currentUser.getId(), currentUser);
@@ -340,6 +379,18 @@ public class UpdateController {
         return user1;
     }
 
+    private User findCurrentUser(Long chatId) {
+        for (User currentUser : userService.findAll()) {
+            if (chatId.equals(currentUser.getChatId())) {
+                return currentUser;
+            }
+        }
+        User user1 = new User();
+        user1.setChatId(chatId);
+        userService.create(user1);
+        return user1;
+    }
+
     private void photo(Update update, String hashId) {
         FileStorage fileStorage = fileStorageService.findByHashId(hashId);
         if (fileStorage != null) {
@@ -348,5 +399,11 @@ public class UpdateController {
             messages.setPhoto(new InputFile(new File(uploadFolder + fileStorage.getUploadPath())));
             mainBot.sendAnswerMessageWithPhoto(messages);
         }
+    }
+
+    private void uploadPhotoWithInlineKeyboardButton(Update update, String products1, Products products) {
+        FileStorage fileStorage = fileStorageService.findByHashId(products1);
+        var senderMessage2 = inlineKeyboardButton.orderKeyboards(update, fileStorage.getUploadPath(), uploadFolder, products);
+        mainBot.sendAnswerMessageWithPhoto(senderMessage2);
     }
 }

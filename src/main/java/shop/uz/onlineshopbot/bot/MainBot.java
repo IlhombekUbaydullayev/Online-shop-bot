@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import shop.uz.onlineshopbot.controller.UpdateController;
 
@@ -60,6 +62,16 @@ public class MainBot extends TelegramLongPollingBot {
     }
 
     public void sendAnswerMessage(SendMessage sendMessage) {
+        if (sendMessage != null) {
+            try {
+                execute(sendMessage);
+            }catch (Exception e) {
+                log.error(String.valueOf(e));
+            }
+        }
+    }
+
+    public void sendAnswerMessage(EditMessageReplyMarkup sendMessage) {
         if (sendMessage != null) {
             try {
                 execute(sendMessage);
