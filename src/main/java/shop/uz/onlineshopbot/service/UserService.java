@@ -34,6 +34,7 @@ public class UserService {
             user2.setAddress(user.getAddress());
             user2.setTx(user.getTx());
             user2.setCheckeds(user.isCheckeds());
+            user2.setIsChecked(user.getIsChecked());
             userRepository.save(user2);
             return user2;
         }

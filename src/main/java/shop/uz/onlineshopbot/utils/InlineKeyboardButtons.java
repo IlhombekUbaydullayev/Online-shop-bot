@@ -49,30 +49,37 @@ public class InlineKeyboardButtons {
         return sendMessage;
     }
 
-    public EditMessageReplyMarkup orderKeyboardsOrder(Update update) {
+    public EditMessageReplyMarkup orderKeyboardsOrder(Update update,String prev,int count) {
         var message = update.getMessage();
         var sendMessage = new EditMessageReplyMarkup();
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
 
         List<InlineKeyboardButton> rows2 = new ArrayList<>();
+        List<InlineKeyboardButton> rows3 = new ArrayList<>();
 
         InlineKeyboardButton inlineKeyboardButtonUz = new InlineKeyboardButton();
         inlineKeyboardButtonUz.setText("-");
-        inlineKeyboardButtonUz.setCallbackData("add");
+        inlineKeyboardButtonUz.setCallbackData("remove");
 
         InlineKeyboardButton inlineKeyboardButtonNum = new InlineKeyboardButton();
-        inlineKeyboardButtonNum.setText("1");
+        inlineKeyboardButtonNum.setText(""+count);
         inlineKeyboardButtonNum.setCallbackData("num");
 
         InlineKeyboardButton inlineKeyboardButtonRu = new InlineKeyboardButton();
         inlineKeyboardButtonRu.setText("+");
-        inlineKeyboardButtonRu.setCallbackData("remove");
+        inlineKeyboardButtonRu.setCallbackData("add");
+
+        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+        inlineKeyboardButton.setText(prev);
+        inlineKeyboardButton.setCallbackData(prev);
         rows2.add(inlineKeyboardButtonUz);
         rows2.add(inlineKeyboardButtonNum);
         rows2.add(inlineKeyboardButtonRu);
+        rows3.add(inlineKeyboardButton);
 
         List<List<InlineKeyboardButton>> tr = new ArrayList<>();
         tr.add(rows2);
+        tr.add(rows3);
         inlineKeyboardMarkup.setKeyboard(tr);
         sendMessage.setReplyMarkup(inlineKeyboardMarkup);
 

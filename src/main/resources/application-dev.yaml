@@ -22,7 +22,7 @@ spring:
       idle-timeout: 60000
       max-lifetime: 1800000
   jpa:
-    generate-ddl: false
+    generate-ddl: true
     hibernate:
       ddl-auto: update
     show-sql: true

@@ -53,13 +53,16 @@ public class UpdateController {
     private final FileStorageService fileStorageService;
 
     private final ProductService productService;
+
+    private final BasketService basketService;
     ResourceBundleMessageSource bundle = new ResourceBundleMessageSource();
     Locale locale = null;
     private User currentUser;
     List<Category> allByParentId = null;
 
+
     public UpdateController(MessageUtils messageUtils, UserService userService,
-                            CategoryService categoryService, AddressService addressService, ReplyKeyboardButton replyKeyboardButton, InlineKeyboardButtons inlineKeyboardButton, FileStorageService fileStorageService, ProductService productService) {
+                            CategoryService categoryService, AddressService addressService, ReplyKeyboardButton replyKeyboardButton, InlineKeyboardButtons inlineKeyboardButton, FileStorageService fileStorageService, ProductService productService, BasketService basketService) {
         this.messageUtils = messageUtils;
         this.userService = userService;
         this.categoryService = categoryService;
@@ -68,6 +71,7 @@ public class UpdateController {
         this.inlineKeyboardButton = inlineKeyboardButton;
         this.fileStorageService = fileStorageService;
         this.productService = productService;
+        this.basketService = basketService;
     }
 
     public void registerBot(MainBot mainBot) {
@@ -329,12 +333,53 @@ public class UpdateController {
         Long chatId = update.getCallbackQuery().getFrom().getId();
         String data = update.getCallbackQuery().getData();
         currentUser = findCurrentUser(chatId);
+        Products products = productService.findByName(currentUser.getTx());
+        log.info(data);
         if (currentUser.getState().equals(ORDER_DEFAULT)) {
-            var sendMessage = inlineKeyboardButton.orderKeyboardsOrder(update);
-            editMessage(sendMessage, ORDER_DEFAULT);
-            log.info("DATA from : " + data);
-            log.info("DATA from message id : " + update.getCallbackQuery().getMessage().getMessageId());
-
+            if (data.equals(products.getMini() + "") || data.equals(products.getBig() + "")) {
+                boolean isName = basketService.findByName(Integer.parseInt(data),products.getName(),chatId);
+                var basket = Basket
+                        .builder()
+                        .desciption(products.getName())
+                        .delivery(12000)
+                        .chatId(chatId)
+                        .price(Integer.parseInt(data))
+                        .count(1)
+                        .build();
+                currentUser.setIsChecked(Integer.parseInt(data));
+                userService.update(chatId,currentUser);
+                if (!isName) {
+                    basketService.create(basket);
+                }else {
+                    basket.setCount(1);
+                    basketService.update(chatId,basket,currentUser.getIsChecked());
+                }
+                var sendMessage = inlineKeyboardButton.orderKeyboardsOrder(update,BTN_ORDER_EMOJI,basket.getCount());
+                editMessage(sendMessage, ORDER);
+            }
+        }
+        else if(currentUser.getState().equals(ORDER)) {
+            if (data.equals(BTN_ORDER_EMOJI)) {
+                Basket basket = basketService.findByNames(currentUser.getIsChecked(), products.getName(), chatId);
+                basket.setStatus(true);
+                basketService.update(chatId,basket, currentUser.getIsChecked());
+            } else if (data.equals("add")) {
+                Basket basket = basketService.findByNames(currentUser.getIsChecked(), products.getName(), chatId);
+                if (basket.getCount() < 11) {
+                    basket.setCount(basket.getCount()+1);
+                    basketService.update(chatId,basket, currentUser.getIsChecked());
+                    var sendMessage = inlineKeyboardButton.orderKeyboardsOrder(update,BTN_ORDER_EMOJI,basket.getCount());
+                    editMessage(sendMessage,ORDER);
+                }
+            }else if (data.equals("remove")) {
+                Basket basket = basketService.findByNames(currentUser.getIsChecked(), products.getName(), chatId);
+                if (basket.getCount() > 1) {
+                    basket.setCount(basket.getCount()-1);
+                    basketService.update(chatId,basket, currentUser.getIsChecked());
+                    var sendMessage = inlineKeyboardButton.orderKeyboardsOrder(update,BTN_ORDER_EMOJI,basket.getCount());
+                    editMessage(sendMessage,ORDER);
+                }
+            }
         }
     }
 
