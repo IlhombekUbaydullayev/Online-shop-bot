@@ -129,7 +129,7 @@ public class UpdateController {
                     });
                     if (text.equals(currentUser.getTx())) {
                         Category category = categoryService.findAllByName(currentUser.getTx());
-                        var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
+                        var sendMessage = replyKeyboardButton.secondKeyboard(update,senderButtonMessage(CHECK_PRODUCTS),
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getId()), false);
                         if (category.getFileStorage() != null) {
                             photo(update, category.getFileStorage().getHashId());
@@ -170,7 +170,7 @@ public class UpdateController {
                         } else {
                             allByParentId = categoryService.findAllByParentId(category.getParentId());
                         }
-                        var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
+                        var sendMessage = replyKeyboardButton.secondKeyboard(update,senderButtonMessage(CHECK_PRODUCTS),
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), allByParentId, false);
                         senderMessage(sendMessage, INLINE);
                     }
@@ -236,7 +236,7 @@ public class UpdateController {
                         if (!currentUser.isCheckeds()) {
                             Category category = categoryService.findAllByName(currentUser.getTx());
                             Category category1 = categoryService.findByParentId(category.getParentId());
-                            var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
+                            var sendMessage = replyKeyboardButton.secondKeyboard(update,senderButtonMessage(CHECK_PRODUCTS),
                                     BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getParentId()), false);
                             photo(update, category1.getFileStorage().getHashId());
                             senderMessage(sendMessage, INLINE);
@@ -244,7 +244,7 @@ public class UpdateController {
                             Products category = productService.findByName(currentUser.getTx());
                             Category category1 = categoryService.findById(category.getCategory().getId());
                             Category category2 = categoryService.findByParentId(category1.getParentId());
-                            var sendMessage = replyKeyboardButton.secondKeyboard(update, "Mahsulotni tanlang!",
+                            var sendMessage = replyKeyboardButton.secondKeyboard(update,senderButtonMessage(CHECK_PRODUCTS),
                                     BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category1.getParentId()), false);
                             photo(update, category2.getFileStorage().getHashId());
                             senderMessage(sendMessage, INLINE);

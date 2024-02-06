@@ -9,4 +9,6 @@ public class TranslationCode {
     public static final String BTN_COMMENT = "btn_comment";
     public static final String BTN_SETTING = "btn_setting";
     public static final String DEFAULT = "⚙\uFE0F";
+
+    public static final String CHECK_PRODUCTS = "check_products";
 }
