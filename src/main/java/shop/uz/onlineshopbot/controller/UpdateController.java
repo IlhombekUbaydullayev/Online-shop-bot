@@ -363,6 +363,18 @@ public class UpdateController {
                 Basket basket = basketService.findByNames(currentUser.getIsChecked(), products.getName(), chatId);
                 basket.setStatus(true);
                 basketService.update(chatId,basket, currentUser.getIsChecked());
+                Products productsSec = productService.findByName(currentUser.getTx());
+                Category category = categoryService.findById(productsSec.getCategory().getId());
+                List<Category> findAll = categoryService.findAllByParentId(category.getParentId()); 
+                Category second = categoryService.findById(category.getParentId());
+                        var sendMessage = replyKeyboardButton.bucketKeyboard(update,senderButtonMessage(CHECK_PRODUCTS),
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK),findAll,BTN_ORDER_EMOJI +" "+ senderButtonMessage(BUTTON_ORDER_SELL));
+                        if (products.getFileStorage() != null) {
+                            photoBack(update,second.getFileStorage().getHashId());
+                        }
+                        senderMessage(sendMessage, INLINE);
+
+
             } else if (data.equals("add")) {
                 Basket basket = basketService.findByNames(currentUser.getIsChecked(), products.getName(), chatId);
                 if (basket.getCount() < 11) {
@@ -372,6 +384,7 @@ public class UpdateController {
                     editMessage(sendMessage,ORDER);
                 }
             }else if (data.equals("remove")) {
+                
                 Basket basket = basketService.findByNames(currentUser.getIsChecked(), products.getName(), chatId);
                 if (basket.getCount() > 1) {
                     basket.setCount(basket.getCount()-1);
@@ -441,6 +454,16 @@ public class UpdateController {
         if (fileStorage != null) {
             SendPhoto messages = new SendPhoto();
             messages.setChatId(update.getMessage().getChatId());
+            messages.setPhoto(new InputFile(new File(uploadFolder + fileStorage.getUploadPath())));
+            mainBot.sendAnswerMessageWithPhoto(messages);
+        }
+    }
+
+    private void photoBack(Update update, String hashId) {
+        FileStorage fileStorage = fileStorageService.findByHashId(hashId);
+        if (fileStorage != null) {
+            SendPhoto messages = new SendPhoto();
+            messages.setChatId(update.getCallbackQuery().getFrom().getId());
             messages.setPhoto(new InputFile(new File(uploadFolder + fileStorage.getUploadPath())));
             mainBot.sendAnswerMessageWithPhoto(messages);
         }

@@ -52,7 +52,10 @@ public class CategoryService {
 
     public Category findByParentId(Long parentId) {
         Optional<Category> category = repository.findById(parentId);
-        return category.orElseGet(Category::new);
+        if (category.isPresent()) {
+            return category.get();
+        }
+        else return new Category();
     }
 
     public Category update(Long categoryId,Category category) {
@@ -70,5 +73,9 @@ public class CategoryService {
 
     public Category findById(Long id) {
         return repository.findById(id).get();
+    }
+
+    public List<Category> findAllById(Long id) {
+        return repository.findAllById(id);
     }
 }
