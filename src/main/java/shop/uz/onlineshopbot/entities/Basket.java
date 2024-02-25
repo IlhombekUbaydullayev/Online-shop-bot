@@ -22,4 +22,5 @@ public class Basket {
     private Long chatId;
     private boolean status = false;
     private int count = 1;
+    private String orderName;
 }

@@ -163,7 +163,12 @@ public class UpdateController {
                         senderMessage(sendMessage, PRODUCTS);
                         currentUser.setCheckeds(false);
                         userService.update(currentUser.getId(), currentUser);
-                    } else {
+                    } else if (text.equals(BTN_ORDER_EMOJI +" "+ senderButtonMessage(BUTTON_ORDER_SELL))) {
+                        List<Basket> findAll = basketService.findAll();
+                        var senderMessage = inlineKeyboardButton.showBuckets(update, "Bo'limni tanlang",findAll);
+                        senderMessage(senderMessage,INLINE);
+                    }
+                     else {
                         Category category = categoryService.findAllByName(currentUser.getTx());
                         if (!currentUser.isCheckeds()) {
                             allByParentId = categoryService.findAllByParentId(category.getId());
@@ -337,8 +342,11 @@ public class UpdateController {
         log.info(data);
         if (currentUser.getState().equals(ORDER_DEFAULT)) {
             if (data.equals(products.getMini() + "") || data.equals(products.getBig() + "")) {
-                boolean isName = basketService.findByName(Integer.parseInt(data),products.getName(),chatId);
-                var basket = Basket
+                boolean isName = basketService.findByNameAll(Integer.parseInt(data),products.getName(),chatId);
+                currentUser.setIsChecked(Integer.parseInt(data));
+                userService.update(chatId,currentUser);
+                if (isName==false) {
+                    var basket = Basket
                         .builder()
                         .desciption(products.getName())
                         .delivery(12000)
@@ -346,22 +354,28 @@ public class UpdateController {
                         .price(Integer.parseInt(data))
                         .count(1)
                         .build();
-                currentUser.setIsChecked(Integer.parseInt(data));
-                userService.update(chatId,currentUser);
-                if (!isName) {
+                    if (data.equals(products.getMini()+"")) {
+                        basket.setOrderName("Mini");
+                    }else {
+                        basket.setOrderName("Big");   
+                    }
                     basketService.create(basket);
+                    var sendMessage = inlineKeyboardButton.orderKeyboardsOrder(update,BTN_ORDER_EMOJI,basket.getCount());
+                    editMessage(sendMessage, ORDER);
                 }else {
+                    Basket basket = basketService.findByNames(Integer.parseInt(data),products.getName(),chatId);
                     basket.setCount(1);
                     basketService.update(chatId,basket,currentUser.getIsChecked());
+                    var sendMessage = inlineKeyboardButton.orderKeyboardsOrder(update,BTN_ORDER_EMOJI,basket.getCount());
+                    editMessage(sendMessage, ORDER);  
                 }
-                var sendMessage = inlineKeyboardButton.orderKeyboardsOrder(update,BTN_ORDER_EMOJI,basket.getCount());
-                editMessage(sendMessage, ORDER);
             }
         }
         else if(currentUser.getState().equals(ORDER)) {
             if (data.equals(BTN_ORDER_EMOJI)) {
                 Basket basket = basketService.findByNames(currentUser.getIsChecked(), products.getName(), chatId);
                 basket.setStatus(true);
+                basket.setTotal(basket.getCount()+basket.getTotal());
                 basketService.update(chatId,basket, currentUser.getIsChecked());
                 Products productsSec = productService.findByName(currentUser.getTx());
                 Category category = categoryService.findById(productsSec.getCategory().getId());
