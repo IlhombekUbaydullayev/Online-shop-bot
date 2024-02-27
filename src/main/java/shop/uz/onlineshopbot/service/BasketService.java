@@ -43,6 +43,14 @@ public class BasketService {
         return repository.findByPriceAndDesciptionAndChatId(data,name,chatId).get();
     }
 
+    public String deleteByName(String desciption,String orderName) {
+        Optional<Basket> desc = repository.findByDesciptionAndOrderName(desciption,orderName);
+        if (desc.isPresent()) {
+            repository.deleteById(desc.get().getId());   
+        }
+        return "";
+    }
+
     public List<Basket> findAll() {
         return repository.findAllByStatusTrue();
     }

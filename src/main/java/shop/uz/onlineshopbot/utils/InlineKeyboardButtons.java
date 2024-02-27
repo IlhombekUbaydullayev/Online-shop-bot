@@ -32,6 +32,8 @@ import static java.lang.Math.toIntExact;
 public class InlineKeyboardButtons {
 
     String text2 = "";
+    int count = 0;
+    int totla = 0;
 
     public SendPhoto orderKeyboards(Update update, String photoUrl, String uploadFolder, Products products) {
         var message = update.getMessage();
@@ -103,35 +105,129 @@ public class InlineKeyboardButtons {
 
     public SendMessage showBuckets(Update update,String sender,List<Basket> baskets) {
         text2 = "";
+        count = 0;
         SendMessage sendMessage = new SendMessage();
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<InlineKeyboardButton> btn = new ArrayList<>();
-        InlineKeyboardButton line1 = new InlineKeyboardButton();
-        Set<String> findAll = new HashSet<String>();
-        Map<Integer, String> map = new HashMap<Integer, String>();
-        
-        for(int i = 1;i <= baskets.size()-1; i++ ) {
-            map.put(i, baskets.get(i).getDesciption());
-        }
-
-        Multimap<String, Integer> multiMap = HashMultimap.create();
-        for (Entry<Integer, String> entry : map.entrySet()) {
-            multiMap.put(entry.getValue(), entry.getKey());
-        }
-        System.out.println();
-        for (Entry<String, Collection<Integer>> entry : multiMap.asMap().entrySet()) {
-            System.out.println("Original value: " + entry.getKey() + " was mapped to keys: "+ entry.getValue());
-        }
-
-        findAll.forEach(f -> {
-            text2 += f;
-            text2 += "\n";
-        });
-        line1.setText("Savatda:\n");
-        line1.setCallbackData("order");
-        btn.add(line1);
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        rows.add(btn);
+
+        baskets.forEach(f -> {
+            List<InlineKeyboardButton> btn = new ArrayList<>();
+            InlineKeyboardButton line1 = new InlineKeyboardButton();
+            switch(f.getTotal()) {
+                case 1 : {
+                    text2 +=  "1️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 2 : {
+                    text2 +=  "2️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 3 : {
+                    text2 +=  "3️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 4 : {
+                    text2 +=  "4️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 5 : {
+                    text2 +=  "5️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 6 : {
+                    text2 +=  "6️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 7 : {
+                    text2 +=  "7️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 8 : {
+                    text2 +=  "8️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 9 : {
+                    text2 +=  "9️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 10 : {
+                    text2 +=  "🔟";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 11 : {
+                    text2 +=  "1️⃣1️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 12 : {
+                    text2 +=  "1️⃣2️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 13 : {
+                    text2 +=  "1️⃣3️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 14 : {
+                    text2 +=  "1️⃣4️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 15 : {
+                    text2 +=  "1️⃣5️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 16 : {
+                    text2 +=  "1️⃣6️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 17 : {
+                    text2 +=  "1️⃣7️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 18 : {
+                    text2 +=  "1️⃣8️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 19 : {
+                    text2 +=  "1️⃣9️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 20 : {
+                    text2 +=  "2️⃣0️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+            }
+            text2 += " ✖️ ";
+            text2 += f.getDesciption();
+            text2 += " ";
+            text2 += f.getOrderName();
+            text2 += "\n";
+            line1.setText("❌"+f.getDesciption() + " " + f.getOrderName());
+            line1.setCallbackData(f.getDesciption()+" "+f.getOrderName());
+            btn.add(line1);
+            rows.add(btn);
+        });
+        text2 += "Mahsulotlar : " + count + " so'm\n";
+        text2 += "Yetkazib berish : 10000 so'm\n";
+        text2 += "Jami: " + (count + 10000) + " so'm\n";
         inlineKeyboardMarkup.setKeyboard(rows);
         Long chatId = update.getMessage().getChatId();
         String text = update.getMessage().getText();
@@ -140,5 +236,151 @@ public class InlineKeyboardButtons {
         sendMessage.setReplyMarkup(inlineKeyboardMarkup);
         return sendMessage;
     }
+
+    public EditMessageText deleteKeyboardsOrder(Update update,List<Basket> baskets) {
+        text2 = "";
+        count = 0;
+        var sendMessage = new EditMessageText();
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        baskets.forEach(f -> {
+            List<InlineKeyboardButton> btn = new ArrayList<>();
+            InlineKeyboardButton line1 = new InlineKeyboardButton();
+            switch(f.getTotal()) {
+                case 1 : {
+                    text2 +=  "1️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 2 : {
+                    text2 +=  "2️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 3 : {
+                    text2 +=  "3️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 4 : {
+                    text2 +=  "4️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 5 : {
+                    text2 +=  "5️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 6 : {
+                    text2 +=  "6️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 7 : {
+                    text2 +=  "7️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 8 : {
+                    text2 +=  "8️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 9 : {
+                    text2 +=  "9️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 10 : {
+                    text2 +=  "🔟";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 11 : {
+                    text2 +=  "1️⃣1️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 12 : {
+                    text2 +=  "1️⃣2️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 13 : {
+                    text2 +=  "1️⃣3️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 14 : {
+                    text2 +=  "1️⃣4️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 15 : {
+                    text2 +=  "1️⃣5️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 16 : {
+                    text2 +=  "1️⃣6️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 17 : {
+                    text2 +=  "1️⃣7️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 18 : {
+                    text2 +=  "1️⃣8️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 19 : {
+                    text2 +=  "1️⃣9️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+                case 20 : {
+                    text2 +=  "2️⃣0️⃣";
+                    count += f.getTotal()*f.getPrice();
+                    break;
+                }
+            }
+            text2 += " ✖️ ";
+            text2 += f.getDesciption();
+            text2 += " ";
+            text2 += f.getOrderName();
+            text2 += "\n";
+            line1.setText("❌"+f.getDesciption() + " " + f.getOrderName());
+            line1.setCallbackData(f.getDesciption()+" "+f.getOrderName());
+            btn.add(line1);
+            rows.add(btn);
+        });
+        text2 += "Mahsulotlar : " + count + " so'm\n";
+        
+        text2 += "Yetkazib berish : 10000 so'm\n";
+        text2 += "Jami: " + (count + 10000) + " so'm\n";
+        inlineKeyboardMarkup.setKeyboard(rows);
+        sendMessage.setChatId(update.getCallbackQuery().getFrom().getId());
+        sendMessage.setMessageId(toIntExact(update.getCallbackQuery().getMessage().getMessageId()));
+        sendMessage.setReplyMarkup(inlineKeyboardMarkup);
+        sendMessage.setText(text2);
+        return sendMessage;
+    }
+
+    public EditMessageText deleteEmptyKeyboardsOrder(Update update,List<Basket> baskets) {
+        text2 = "";
+        count = 0;
+        var sendMessage = new EditMessageText();
+        sendMessage.setChatId(update.getCallbackQuery().getFrom().getId());
+        sendMessage.setMessageId(toIntExact(update.getCallbackQuery().getMessage().getMessageId()));
+        sendMessage.setText("Savatingiz bo'sh");
+        return sendMessage;
+    }
+
+    
 
 }

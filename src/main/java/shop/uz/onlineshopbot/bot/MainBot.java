@@ -81,6 +81,16 @@ public class MainBot extends TelegramLongPollingBot {
         }
     }
 
+    public void sendAnswerMessage(EditMessageText sendMessage) {
+        if (sendMessage != null) {
+            try {
+                execute(sendMessage);
+            }catch (Exception e) {
+                log.error(String.valueOf(e));
+            }
+        }
+    }
+
     public void sendAnswerMessageWithPhoto(SendPhoto sendPhoto) {
         if (sendPhoto != null) {
             try {

@@ -165,8 +165,15 @@ public class UpdateController {
                         userService.update(currentUser.getId(), currentUser);
                     } else if (text.equals(BTN_ORDER_EMOJI +" "+ senderButtonMessage(BUTTON_ORDER_SELL))) {
                         List<Basket> findAll = basketService.findAll();
-                        var senderMessage = inlineKeyboardButton.showBuckets(update, "Bo'limni tanlang",findAll);
-                        senderMessage(senderMessage,INLINE);
+                        // var senderMessageOne = messageUtils.generateSendMessageWithText(update, "Bo'limni tanlan");
+                        // senderMessage(senderMessageOne,INLINE);
+                        if (!findAll.isEmpty()) {
+                             var senderMessage = inlineKeyboardButton.showBuckets(update, "Bo'limni tanlang",findAll);
+                             senderMessage(senderMessage,INLINE);
+                        }else {
+                               var senderMessages = messageUtils.generateSendMessageWithText(update,"Savatingiz bo'sh.");
+                               senderMessage(senderMessages, INLINE);
+                        }
                     }
                      else {
                         Category category = categoryService.findAllByName(currentUser.getTx());
@@ -391,7 +398,7 @@ public class UpdateController {
 
             } else if (data.equals("add")) {
                 Basket basket = basketService.findByNames(currentUser.getIsChecked(), products.getName(), chatId);
-                if (basket.getCount() < 11) {
+                if (basket.getCount() < 21) {
                     basket.setCount(basket.getCount()+1);
                     basketService.update(chatId,basket, currentUser.getIsChecked());
                     var sendMessage = inlineKeyboardButton.orderKeyboardsOrder(update,BTN_ORDER_EMOJI,basket.getCount());
@@ -405,6 +412,21 @@ public class UpdateController {
                     basketService.update(chatId,basket, currentUser.getIsChecked());
                     var sendMessage = inlineKeyboardButton.orderKeyboardsOrder(update,BTN_ORDER_EMOJI,basket.getCount());
                     editMessage(sendMessage,ORDER);
+                }
+            }
+        }else if(currentUser.getState().equals(INLINE)) {
+            String[] arrOfStr = data.split(" ");
+            System.out.println(arrOfStr.length);
+            if (arrOfStr.length == 3) {
+                basketService.deleteByName(arrOfStr[0]+" " + arrOfStr[1],arrOfStr[2]);
+                List<Basket> findAll = basketService.findAll();
+                
+                if (!findAll.isEmpty()) {
+                    var senderMessage = inlineKeyboardButton.deleteKeyboardsOrder(update,findAll);
+                    editMessage(senderMessage, INLINE);
+                }else {
+                    var senderMessages = inlineKeyboardButton.deleteEmptyKeyboardsOrder(update,findAll);
+                    editMessage(senderMessages, INLINE);
                 }
             }
         }
@@ -423,6 +445,10 @@ public class UpdateController {
         mainBot.sendAnswerMessage(sendMessage);
     }
 
+    private void setView(EditMessageText sendMessage) {
+        mainBot.sendAnswerMessage(sendMessage);
+    }
+
     private String senderButtonMessage(String text) {
         return bundle.getMessage(text, null, locale);
     }
@@ -434,6 +460,12 @@ public class UpdateController {
     }
 
     private void editMessage(EditMessageReplyMarkup sendMessage, UserState state) {
+        setView(sendMessage);
+        currentUser.setState(state);
+        userService.update(currentUser.getId(), currentUser);
+    }
+
+    private void editMessage(EditMessageText sendMessage, UserState state) {
         setView(sendMessage);
         currentUser.setState(state);
         userService.update(currentUser.getId(), currentUser);
