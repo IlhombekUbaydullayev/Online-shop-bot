@@ -33,7 +33,7 @@ public class InlineKeyboardButtons {
 
     String text2 = "";
     int count = 0;
-    int totla = 0;
+    int total = 0;
 
     public SendPhoto orderKeyboards(Update update, String photoUrl, String uploadFolder, Products products) {
         var message = update.getMessage();
@@ -106,6 +106,7 @@ public class InlineKeyboardButtons {
     public SendMessage showBuckets(Update update,String sender,List<Basket> baskets) {
         text2 = "";
         count = 0;
+        total = 0;
         SendMessage sendMessage = new SendMessage();
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
@@ -113,6 +114,7 @@ public class InlineKeyboardButtons {
         baskets.forEach(f -> {
             List<InlineKeyboardButton> btn = new ArrayList<>();
             InlineKeyboardButton line1 = new InlineKeyboardButton();
+            total += f.getTotal();
             switch(f.getTotal()) {
                 case 1 : {
                     text2 +=  "1️⃣";
@@ -226,8 +228,13 @@ public class InlineKeyboardButtons {
             rows.add(btn);
         });
         text2 += "Mahsulotlar : " + count + " so'm\n";
-        text2 += "Yetkazib berish : 10000 so'm\n";
-        text2 += "Jami: " + (count + 10000) + " so'm\n";
+        if (total < 5) {
+            text2 += "Yetkazib berish : 10000 so'm\n";
+            text2 += "Jami: " + (count + 10000) + " so'm\n";
+        }else {
+            text2 += "Yetkazib berish : tekin\n";
+            text2 += "Jami: " + count + " so'm\n";
+        }
         inlineKeyboardMarkup.setKeyboard(rows);
         Long chatId = update.getMessage().getChatId();
         String text = update.getMessage().getText();
@@ -240,6 +247,7 @@ public class InlineKeyboardButtons {
     public EditMessageText deleteKeyboardsOrder(Update update,List<Basket> baskets) {
         text2 = "";
         count = 0;
+        total = 0;
         var sendMessage = new EditMessageText();
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
@@ -360,9 +368,13 @@ public class InlineKeyboardButtons {
             rows.add(btn);
         });
         text2 += "Mahsulotlar : " + count + " so'm\n";
-        
-        text2 += "Yetkazib berish : 10000 so'm\n";
-        text2 += "Jami: " + (count + 10000) + " so'm\n";
+        if (total < 5) {
+            text2 += "Yetkazib berish : 10000 so'm\n";
+            text2 += "Jami: " + (count + 10000) + " so'm\n";
+        }else {
+            text2 += "Yetkazib berish : tekin\n";
+            text2 += "Jami: " + count + " so'm\n";
+        }
         inlineKeyboardMarkup.setKeyboard(rows);
         sendMessage.setChatId(update.getCallbackQuery().getFrom().getId());
         sendMessage.setMessageId(toIntExact(update.getCallbackQuery().getMessage().getMessageId()));

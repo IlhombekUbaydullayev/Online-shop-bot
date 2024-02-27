@@ -43,15 +43,15 @@ public class BasketService {
         return repository.findByPriceAndDesciptionAndChatId(data,name,chatId).get();
     }
 
-    public String deleteByName(String desciption,String orderName) {
-        Optional<Basket> desc = repository.findByDesciptionAndOrderName(desciption,orderName);
+    public String deleteByName(String desciption,String orderName,Long chatId) {
+        Optional<Basket> desc = repository.findByDesciptionAndOrderNameAndChatId(desciption,orderName,chatId);
         if (desc.isPresent()) {
-            repository.deleteById(desc.get().getId());   
+            repository.deleteAllByDesciptionAndOrderNameAndChatId(desciption,orderName,chatId);   
         }
         return "";
     }
 
-    public List<Basket> findAll() {
-        return repository.findAllByStatusTrue();
+    public List<Basket> findAll(Long chatId) {
+        return repository.findAllByChatIdAndStatusTrue(chatId);
     }
 }

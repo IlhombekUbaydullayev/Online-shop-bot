@@ -10,8 +10,9 @@ public interface BasketRepository extends JpaRepository<Basket,Long> {
     Optional<Basket> findByChatIdAndDesciptionAndPrice(Long chatId, String desciption,int price);
     Optional<Basket> findByPriceAndDesciptionAndChatIdAndStatusFalse(int price, String desciption, Long chatId);
     Optional<Basket> findByPriceAndDesciptionAndChatId(int price, String desciption, Long chatId);
-    Optional<Basket> findByDesciptionAndOrderName(String description,String orderName);
-    List<Basket> findAllByStatusTrue();
+    Optional<Basket> findByDesciptionAndOrderNameAndChatId(String description,String orderName,Long chatId);
+    List<Basket> findAllByChatIdAndStatusTrue(Long chatId);
+    List<Basket> deleteByDesciptionAndOrderNameAndChatId(String description,String orderName,Long chatId);
 
 }
 

@@ -164,9 +164,16 @@ public class UpdateController {
                         currentUser.setCheckeds(false);
                         userService.update(currentUser.getId(), currentUser);
                     } else if (text.equals(BTN_ORDER_EMOJI +" "+ senderButtonMessage(BUTTON_ORDER_SELL))) {
-                        List<Basket> findAll = basketService.findAll();
+                        List<Basket> findAll = basketService.findAll(update.getMessage().getChatId());
                         // var senderMessageOne = messageUtils.generateSendMessageWithText(update, "Bo'limni tanlan");
                         // senderMessage(senderMessageOne,INLINE);
+
+                        Products products = productService.findByName(currentUser.getTx());
+                        Category category = categoryService.findById(products.getCategory().getId());
+                        var sendMessage = replyKeyboardButton.secondKeyboard(update,senderButtonMessage(CHECK_PRODUCTS),
+                        BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getParentId()), false);
+                        senderMessage(sendMessage, INLINE);
+
                         if (!findAll.isEmpty()) {
                              var senderMessage = inlineKeyboardButton.showBuckets(update, "Bo'limni tanlang",findAll);
                              senderMessage(senderMessage,INLINE);
@@ -418,8 +425,8 @@ public class UpdateController {
             String[] arrOfStr = data.split(" ");
             System.out.println(arrOfStr.length);
             if (arrOfStr.length == 3) {
-                basketService.deleteByName(arrOfStr[0]+" " + arrOfStr[1],arrOfStr[2]);
-                List<Basket> findAll = basketService.findAll();
+                basketService.deleteByName(arrOfStr[0] + " " + arrOfStr[1],arrOfStr[2], chatId);
+                List<Basket> findAll = basketService.findAll(chatId);
                 
                 if (!findAll.isEmpty()) {
                     var senderMessage = inlineKeyboardButton.deleteKeyboardsOrder(update,findAll);
