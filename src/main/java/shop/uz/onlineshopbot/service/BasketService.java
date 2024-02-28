@@ -46,7 +46,7 @@ public class BasketService {
     public String deleteByName(String desciption,String orderName,Long chatId) {
         Optional<Basket> desc = repository.findByDesciptionAndOrderNameAndChatId(desciption,orderName,chatId);
         if (desc.isPresent()) {
-            repository.deleteAllByDesciptionAndOrderNameAndChatId(desciption,orderName,chatId);   
+            repository.deleteById(desc.get().getId()); 
         }
         return "";
     }
