@@ -12,4 +12,7 @@ public class TranslationCode {
     public static final String BUTTON_ORDER_SELL = "btn_order_sell";
 
     public static final String CHECK_PRODUCTS = "check_products";
+
+    public static final String TEXT_SEND_CONTACT = "text_send_contact";
+    public static final String MY_PHONE_TEX = "my_phone_text";
 }

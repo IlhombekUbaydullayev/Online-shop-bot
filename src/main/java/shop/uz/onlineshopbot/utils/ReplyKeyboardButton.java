@@ -270,4 +270,30 @@ public class ReplyKeyboardButton {
         return sendMessage;
     }
 
+    public SendMessage myContact(Update update, String text,String btnText1,String btnText2) {
+    
+        var sendMessage = new SendMessage();
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> rows = new ArrayList<>();
+
+        KeyboardButton btn1 = new KeyboardButton();
+        btn1.setText(btnText1); 
+        btn1.setRequestContact(true);
+        KeyboardRow kr1 = new KeyboardRow();
+        KeyboardRow kr2 = new KeyboardRow();
+        KeyboardButton btn2 = new KeyboardButton();
+        btn2.setText(btnText2); 
+        kr1.add(btn1);
+        kr2.add(btn2);
+        rows.add(kr1);
+        rows.add(kr2);
+        replyKeyboardMarkup.setKeyboard(rows);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+
+        sendMessage.setText(text);
+        sendMessage.setChatId(update.getCallbackQuery().getFrom().getId());
+        return sendMessage;
+    }
+
 }

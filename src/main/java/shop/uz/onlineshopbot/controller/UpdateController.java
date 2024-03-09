@@ -97,6 +97,8 @@ public class UpdateController {
             processTextMessage(update);
         } else if (message.hasLocation()) {
             processLocation(update);
+        } else if (message.hasContact()) {
+            processContact(update);
         } else {
             processNotFound(message);
         }
@@ -109,6 +111,13 @@ public class UpdateController {
         bundle.setBasenames("text");
         bundle.setDefaultEncoding("UTF-8");
         locale = new Locale("uz");
+        if (text.equals("/channel")) {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(-1002021970016L);
+            sendMessage.setText("Yuborildi");
+            senderMessage(sendMessage, START);
+            
+        }
         switch (text) {
             case "/start": {
                 var sendMessage = replyKeyboardButton.firstKeyboard(update, "Quyidagilardan birini tanlang!",
@@ -273,7 +282,7 @@ public class UpdateController {
                     } else if (text.equals(currentUser.getTx())) {
                         Products products1 = productService.findByName(currentUser.getTx());
                         var sendMessage = replyKeyboardButton.secondKeyboards(update, "Quyidagilardan birini tanlang",
-                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), BTN_ORDER_EMOJI, false);
+                                BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), BTN_ORDER_EMOJI + " " + senderButtonMessage(BUTTON_ORDER_SELL), false);
                         senderMessage(sendMessage, ORDER_DEFAULT);
                         uploadPhotoWithInlineKeyboardButton(update, products1.getFileStorage().getHashId(), products);
                     } else {
@@ -305,8 +314,24 @@ public class UpdateController {
                         currentUser.setCheckeds(true);
                         photo(update, category.getFileStorage().getHashId());
                         userService.update(currentUser.getId(), currentUser);
-                    } else if (text.equals(byName.getName())) {
+                    } else if (text.equals(BTN_ORDER_EMOJI + " " + senderButtonMessage(BUTTON_ORDER_SELL))) {
+                        List<Basket> findAll = basketService.findAll(update.getMessage().getChatId());
+                        // var senderMessageOne = messageUtils.generateSendMessageWithText(update, "Bo'limni tanlan");
+                        // senderMessage(senderMessageOne,INLINE);
 
+                        Products products = productService.findByName(currentUser.getTx());
+                        Category category = categoryService.findById(products.getCategory().getId());
+                        var sendMessage = replyKeyboardButton.secondKeyboard(update,senderButtonMessage(CHECK_PRODUCTS),
+                        BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAllByParentId(category.getParentId()), false);
+                        senderMessage(sendMessage, INLINE);
+
+                        if (!findAll.isEmpty()) {
+                            var senderMessage = inlineKeyboardButton.showBuckets(update, "Bo'limni tanlang",findAll);
+                            senderMessage(senderMessage,INLINE);
+                       }else {
+                              var senderMessages = messageUtils.generateSendMessageWithText(update,"Savatingiz bo'sh.");
+                              senderMessage(senderMessages, INLINE);
+                       }
                     }
                 }
                 break;
@@ -346,6 +371,10 @@ public class UpdateController {
                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(), false);
         senderMessage(sendMessage, MENU);
         System.out.println(location.getLongitude() + "," + location.getLatitude());
+    }
+
+    private void processContact(Update update) {
+        
     }
 
     private void processCallbackMessage(Update update) {
@@ -424,7 +453,10 @@ public class UpdateController {
         }else if(currentUser.getState().equals(INLINE)) {
             String[] arrOfStr = data.split(" ");
             System.out.println(arrOfStr.length);
-            if (arrOfStr.length == 3) {
+            if (data.equals(BTN_KURER_EMOJI + " Buyurtma berish")) {
+                var sendMessage = replyKeyboardButton.myContact(update,senderButtonMessage(TEXT_SEND_CONTACT), BTN_SHARE_CONTACT+ " " +senderButtonMessage(MY_PHONE_TEX), BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK));
+                senderMessage(sendMessage, INLINE);
+            }else if (arrOfStr.length == 3) {
                 basketService.deleteByName(arrOfStr[0] + " " + arrOfStr[1],arrOfStr[2], chatId);
                 List<Basket> findAll = basketService.findAll(chatId);
                 

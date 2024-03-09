@@ -27,6 +27,10 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import static java.lang.Math.toIntExact;
+import static shop.uz.onlineshopbot.utils.Emojies.BTN_BACKET_CLEAR;
+import static shop.uz.onlineshopbot.utils.Emojies.BTN_BACK_EMOJIES;
+import static shop.uz.onlineshopbot.utils.Emojies.BTN_DELIVERY_OURS;
+import static shop.uz.onlineshopbot.utils.Emojies.BTN_KURER_EMOJI;
 
 @Component
 public class InlineKeyboardButtons {
@@ -110,6 +114,28 @@ public class InlineKeyboardButtons {
         SendMessage sendMessage = new SendMessage();
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> btn2 = new ArrayList<>();
+        InlineKeyboardButton line2 = new InlineKeyboardButton();
+        line2.setText(BTN_BACK_EMOJIES + " Ortga");
+        line2.setCallbackData(BTN_BACK_EMOJIES + " Ortga");
+        btn2.add(line2);
+        InlineKeyboardButton line3 = new InlineKeyboardButton();
+        line3.setText(BTN_KURER_EMOJI + " Buyurtma berish");
+        line3.setCallbackData(BTN_KURER_EMOJI + " Buyurtma berish");
+        btn2.add(line3);
+        rows.add(btn2);
+
+        List<InlineKeyboardButton> btn3 = new ArrayList<>();
+        InlineKeyboardButton line4 = new InlineKeyboardButton();
+        line4.setText(BTN_BACKET_CLEAR + " Savatni tozalash");
+        line4.setCallbackData(BTN_BACKET_CLEAR + " Savatni tozalash");
+        btn3.add(line4);
+        InlineKeyboardButton line5 = new InlineKeyboardButton();
+        line5.setText(BTN_DELIVERY_OURS + " Yetkazib berish vaqti");
+        line5.setCallbackData(BTN_DELIVERY_OURS + " Yetkazib berish vaqti");
+        btn3.add(line5);
+        rows.add(btn3);
 
         baskets.forEach(f -> {
             List<InlineKeyboardButton> btn = new ArrayList<>();
@@ -251,6 +277,28 @@ public class InlineKeyboardButtons {
         var sendMessage = new EditMessageText();
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> btn2 = new ArrayList<>();
+        InlineKeyboardButton line2 = new InlineKeyboardButton();
+        line2.setText(BTN_BACK_EMOJIES + " Ortga");
+        line2.setCallbackData(BTN_BACK_EMOJIES + " Ortga");
+        btn2.add(line2);
+        InlineKeyboardButton line3 = new InlineKeyboardButton();
+        line3.setText(BTN_KURER_EMOJI + " Buyurtma berish");
+        line3.setCallbackData(BTN_KURER_EMOJI + " Buyurtma berish");
+        btn2.add(line3);
+        rows.add(btn2);
+
+        List<InlineKeyboardButton> btn3 = new ArrayList<>();
+        InlineKeyboardButton line4 = new InlineKeyboardButton();
+        line4.setText(BTN_BACKET_CLEAR + " Savatni tozalash");
+        line4.setCallbackData(BTN_BACKET_CLEAR + " Savatni tozalash");
+        btn3.add(line4);
+        InlineKeyboardButton line5 = new InlineKeyboardButton();
+        line5.setText(BTN_DELIVERY_OURS + " Yetkazib berish vaqti");
+        line5.setCallbackData(BTN_DELIVERY_OURS + " Yetkazib berish vaqti");
+        btn3.add(line5);
+        rows.add(btn3);
 
         baskets.forEach(f -> {
             List<InlineKeyboardButton> btn = new ArrayList<>();
