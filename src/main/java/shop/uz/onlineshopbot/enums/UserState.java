@@ -10,5 +10,6 @@ public enum UserState {
     MY_LOCATION,
     PRODUCTS,
     ORDER_DEFAULT,
-    ORDER
+    ORDER,
+    CONTACT
 }

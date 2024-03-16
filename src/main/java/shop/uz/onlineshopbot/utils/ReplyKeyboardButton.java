@@ -95,7 +95,6 @@ public class ReplyKeyboardButton {
             kr1.add(btn);
             rows.add(kr1);
         }
-        System.out.println(kr2.size());
         replyKeyboardMarkup.setKeyboard(rows);
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
         return sendMessage;
@@ -296,4 +295,21 @@ public class ReplyKeyboardButton {
         return sendMessage;
     }
 
+
+    public SendMessage sendOrder(Update update,String text,String btnText) {
+        var sendMessage = new SendMessage();
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> row = new ArrayList();
+        KeyboardRow keyboardRow = new KeyboardRow();
+        KeyboardButton btn = new KeyboardButton();
+        btn.setText(btnText);
+        sendMessage.setText(text);
+        keyboardRow.add(btn);
+        row.add(keyboardRow);
+        replyKeyboardMarkup.setKeyboard(row);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        sendMessage.setChatId(update.getMessage().getChatId());
+        return sendMessage;
+    }
 }

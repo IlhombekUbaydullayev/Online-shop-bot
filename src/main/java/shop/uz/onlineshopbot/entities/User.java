@@ -26,4 +26,7 @@ public class User {
     private String tx = "";
     private boolean isCheckeds = false;
     private int isChecked;
+    @OneToOne
+    private Address currentAddress;
+    private String phoneNumber;
 }

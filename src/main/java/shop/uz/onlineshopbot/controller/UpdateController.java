@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import shop.uz.onlineshopbot.bot.MainBot;
 import shop.uz.onlineshopbot.entities.*;
+import shop.uz.onlineshopbot.enums.OrdersStatus;
 import shop.uz.onlineshopbot.enums.UserState;
 import shop.uz.onlineshopbot.service.*;
 import shop.uz.onlineshopbot.utils.InlineKeyboardButtons;
@@ -54,6 +55,10 @@ public class UpdateController {
 
     private final ProductService productService;
 
+    private final OrderService orderService;
+
+    private final OrderBaseService orderBaseService;
+
     private final BasketService basketService;
     ResourceBundleMessageSource bundle = new ResourceBundleMessageSource();
     Locale locale = null;
@@ -62,7 +67,11 @@ public class UpdateController {
 
 
     public UpdateController(MessageUtils messageUtils, UserService userService,
-                            CategoryService categoryService, AddressService addressService, ReplyKeyboardButton replyKeyboardButton, InlineKeyboardButtons inlineKeyboardButton, FileStorageService fileStorageService, ProductService productService, BasketService basketService) {
+                            CategoryService categoryService, AddressService addressService,
+                             ReplyKeyboardButton replyKeyboardButton, InlineKeyboardButtons
+                              inlineKeyboardButton, FileStorageService fileStorageService,
+                               ProductService productService, BasketService basketService,
+                               OrderService orderService,OrderBaseService orderBaseService) {
         this.messageUtils = messageUtils;
         this.userService = userService;
         this.categoryService = categoryService;
@@ -72,6 +81,8 @@ public class UpdateController {
         this.fileStorageService = fileStorageService;
         this.productService = productService;
         this.basketService = basketService;
+        this.orderService = orderService;
+        this.orderBaseService = orderBaseService;
     }
 
     public void registerBot(MainBot mainBot) {
@@ -244,6 +255,12 @@ public class UpdateController {
                         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(), false);
                         senderMessage(sendMessage, MENU);
+                        if (currentUser.getCurrentAddress() == null) {
+                            var address = addressService.findByLat(currentUser.getId(), Double.parseDouble(text));
+                            address.setLatitude(address.getLatitude());
+                            currentUser.setCurrentAddress(address);
+                            userService.update(currentUser.getId(), currentUser);
+                        }
                     } else {
                         var sendMessage = replyKeyboardButton.myLocation(update, "Yetkazib berish manzilini tanlang",
                                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), addressService.findAllByUserId(currentUser.getId()));
@@ -333,6 +350,27 @@ public class UpdateController {
                               senderMessage(senderMessages, INLINE);
                        }
                     }
+                } else if (currentUser.getState().equals(CONTACT)) {
+                    if (text.equals(BTN_GET_ORDER + "Buyurtma berish")) {
+                        List<Basket> findAll = basketService.findAll(update.getMessage().getChatId());
+                        OrderBase orderBase = new OrderBase();
+                        findAll.forEach(b -> {
+                        var order = Orders
+                        .builder()
+                        .name(b.getDesciption() + " " + b.getOrderName())
+                        .total(b.getTotal())
+                        .price(b.getPrice())
+                        .phoneNumber(currentUser.getPhoneNumber())
+                        .fileHashId(b.getImageHashId())
+                        .status(OrdersStatus.DELIVERY)
+                        .userId(currentUser.getId())
+                        .build();
+                        Orders or = orderService.create(order);
+                        orderBase.getOrders().add(or);
+                        });
+                        orderBaseService.create(orderBase);
+                        // basketService.deleteAllByChatId(currentUser.getChatId());
+                    }
                 }
                 break;
             }
@@ -353,7 +391,6 @@ public class UpdateController {
                 .build();
 
         User user = userService.findOne(currentUser.getId());
-        System.out.println(addressService.findByLatLong(user.getId(), address.getLatitude(), address.getLongitude()));
         address.setUsers(user);
         List<Address> allByUserId = addressService.findAllByUserId(user.getId());
         allByUserId.forEach(a -> {
@@ -370,11 +407,18 @@ public class UpdateController {
         var sendMessage = replyKeyboardButton.secondKeyboard(update, "Ro'yxatdan birini tanlang",
                 BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK), categoryService.findAll(), false);
         senderMessage(sendMessage, MENU);
+        currentUser.setCurrentAddress(addressService.findByLatLong(user.getId(), address.getLatitude(), address.getLongitude()));
+        userService.update(currentUser.getId(), currentUser);
         System.out.println(location.getLongitude() + "," + location.getLatitude());
     }
 
+
     private void processContact(Update update) {
-        
+        String number = update.getMessage().getContact().getPhoneNumber().toString();
+        currentUser.setPhoneNumber(number);
+        userService.update(currentUser.getId(), currentUser);
+        var sendMessage = replyKeyboardButton.sendOrder(update,"Buyurtma bering!",BTN_GET_ORDER + "Buyurtma berish");
+        senderMessage(sendMessage, CONTACT);
     }
 
     private void processCallbackMessage(Update update) {
@@ -396,6 +440,7 @@ public class UpdateController {
                         .chatId(chatId)
                         .price(Integer.parseInt(data))
                         .count(1)
+                        .imageHashId(products.getFileStorage().getHashId())
                         .build();
                     if (data.equals(products.getMini()+"")) {
                         basket.setOrderName("Mini");
@@ -455,7 +500,7 @@ public class UpdateController {
             System.out.println(arrOfStr.length);
             if (data.equals(BTN_KURER_EMOJI + " Buyurtma berish")) {
                 var sendMessage = replyKeyboardButton.myContact(update,senderButtonMessage(TEXT_SEND_CONTACT), BTN_SHARE_CONTACT+ " " +senderButtonMessage(MY_PHONE_TEX), BTN_BACK_EMOJIES + senderButtonMessage(BTN_BACK));
-                senderMessage(sendMessage, INLINE);
+                senderMessage(sendMessage, CONTACT);
             }else if (arrOfStr.length == 3) {
                 basketService.deleteByName(arrOfStr[0] + " " + arrOfStr[1],arrOfStr[2], chatId);
                 List<Basket> findAll = basketService.findAll(chatId);

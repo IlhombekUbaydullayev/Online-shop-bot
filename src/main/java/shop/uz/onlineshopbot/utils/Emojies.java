@@ -10,4 +10,5 @@ public class Emojies {
     public static final String BTN_BACKET_CLEAR = "🗑";
     public static final String BTN_DELIVERY_OURS = "⏳";
     public static final String BTN_SHARE_CONTACT = "📞";
+    public static final String BTN_GET_ORDER = "✍️ ";
 }

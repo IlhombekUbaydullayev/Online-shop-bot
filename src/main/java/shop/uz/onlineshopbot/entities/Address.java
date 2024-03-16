@@ -2,6 +2,7 @@ package shop.uz.onlineshopbot.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Getter
@@ -14,6 +15,7 @@ public class Address {
     private Long id;
     private Double longitude;
     private Double latitude;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name="users_id")
     private User users;

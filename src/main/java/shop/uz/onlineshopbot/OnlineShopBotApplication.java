@@ -31,8 +31,8 @@ public class OnlineShopBotApplication {
 //        System.getProperties().put("socksProxyHost", "127.0.0.1");
 // //
 //        System.getProperties().put("socksProxyPort", "9150");
-//        ClientConfig config = new ClientConfig();
-//        Client client = ClientBuilder.newClient(config);
+    //    ClientConfig config = new ClientConfig();
+    //    Client client = ClientBuilder.newClient(config);
     //    WebTarget target = client.target(getBaseURI());
 
     //    String jsonaddresss =  target.request().accept(MediaType.APPLICATION_JSON).get(String.class);

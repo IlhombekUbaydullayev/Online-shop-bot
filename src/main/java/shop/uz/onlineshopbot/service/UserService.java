@@ -33,8 +33,10 @@ public class UserService {
             user2.setState(user.getState());
             user2.setAddress(user.getAddress());
             user2.setTx(user.getTx());
+            user2.setPhoneNumber(user.getPhoneNumber());
             user2.setCheckeds(user.isCheckeds());
             user2.setIsChecked(user.getIsChecked());
+            user2.setCurrentAddress(user.getCurrentAddress());
             userRepository.save(user2);
             return user2;
         }

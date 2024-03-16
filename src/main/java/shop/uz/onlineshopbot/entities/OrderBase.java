@@ -1,10 +1,19 @@
 package shop.uz.onlineshopbot.entities;
 
+
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.*;
+import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -12,16 +21,9 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Basket {
+public class OrderBase {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String desciption;
-    private int price;
-    private int delivery;
-    private int total;
-    private Long chatId;
-    private boolean status = false;
-    private String imageHashId;
-    private int count = 1;
-    private String orderName;
+    @OneToMany
+    private List<Orders> orders = new ArrayList<>();
 }

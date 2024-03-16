@@ -15,6 +15,10 @@ public class AddressService {
         this.repository = repository;
     }
 
+    public List<Address> findAll() {
+        return repository.findAll();
+    }
+
     public Address create(Address address) {
         Address save = repository.save(address);
         return save;
@@ -36,8 +40,13 @@ public class AddressService {
         return repository.findAllByUsersId(userId);
     }
 
-    public Boolean findByLatLong(Long userId,Double latitude,Double longitude) {
+    public Address findByLatLong(Long userId,Double latitude,Double longitude) {
         Optional<Address> location = repository.findByUsersIdAndLatitudeAndLongitude(userId,latitude, longitude);
-        return location.isPresent();
+        return location.get();
+    }
+
+    public Address findByLat(Long userId,Double latitude) {
+        Optional<Address> location = repository.findByUsersIdAndLatitude(userId,latitude);
+        return location.get();
     }
 }

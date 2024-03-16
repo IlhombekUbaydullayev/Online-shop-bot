@@ -1,8 +1,8 @@
 package shop.uz.onlineshopbot.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import shop.uz.onlineshopbot.entities.Basket;
 
@@ -15,5 +15,7 @@ public interface BasketRepository extends JpaRepository<Basket,Long> {
     Optional<Basket> findByPriceAndDesciptionAndChatId(int price, String desciption, Long chatId);
     Optional<Basket> findByDesciptionAndOrderNameAndChatId(String description,String orderName,Long chatId);
     List<Basket> findAllByChatIdAndStatusTrue(Long chatId);
+    @Query("delete from Basket b where b.chatId=:chatId")
+    void deleteBasket(@Param("chatId") Long chatId);
 }
 

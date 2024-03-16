@@ -54,4 +54,9 @@ public class BasketService {
     public List<Basket> findAll(Long chatId) {
         return repository.findAllByChatIdAndStatusTrue(chatId);
     }
+
+    public String deleteAllByChatId(Long chatId) {
+        repository.deleteBasket(chatId);
+        return "";
+    }
 }
