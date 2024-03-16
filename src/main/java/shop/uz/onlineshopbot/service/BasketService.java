@@ -1,6 +1,8 @@
 package shop.uz.onlineshopbot.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import shop.uz.onlineshopbot.entities.Basket;
 import shop.uz.onlineshopbot.repositories.BasketRepository;
 
@@ -55,6 +57,7 @@ public class BasketService {
         return repository.findAllByChatIdAndStatusTrue(chatId);
     }
 
+    @Transactional
     public String deleteAllByChatId(Long chatId) {
         repository.deleteBasket(chatId);
         return "";

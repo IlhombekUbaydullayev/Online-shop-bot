@@ -363,13 +363,15 @@ public class UpdateController {
                         .phoneNumber(currentUser.getPhoneNumber())
                         .fileHashId(b.getImageHashId())
                         .status(OrdersStatus.DELIVERY)
-                        .userId(currentUser.getId())
+                        .userId(currentUser.getChatId())
                         .build();
                         Orders or = orderService.create(order);
                         orderBase.getOrders().add(or);
                         });
-                        orderBaseService.create(orderBase);
-                        // basketService.deleteAllByChatId(currentUser.getChatId());
+                        orderBaseService.create(orderBase);                        
+                        basketService.deleteAllByChatId(currentUser.getChatId());
+                        
+                        // orderService.deleteAllByChatId(currentUser.getChatId());
                     }
                 }
                 break;
